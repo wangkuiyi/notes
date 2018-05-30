@@ -96,7 +96,7 @@ Invocations:
 1. `reverse_ad.joint`
 
 
-##### `annotate.resolve_calls`
+#### `annotate.resolve_calls`
 
 The function [`resolve_calls`](https://github.com/google/tangent/blob/v0.1.9/tangent/annotate.py#L83) contains two lines:
 
@@ -124,7 +124,7 @@ where
 - [`ResolveCalls(func).visit(node)`](https://github.com/google/tangent/blob/v0.1.9/tangent/annotate.py#L33) traverses the AST of `func` and annotate each `Call` node a `"func"` attribute whose value is the AST node of the callee.
 
 
-##### `anf.anf`
+#### `anf.anf`
 
 According to the comments of `anf.anf`, it is easier to derive the backward pass if we transform the forward pass into the [A-normal form](https://en.wikipedia.org/wiki/A-normal_form) (ANF).
 
@@ -145,7 +145,7 @@ f(v0, v1)
 where `v0` and `v1` are said *trivial* because they are direct values.
 
 
-The class [`ANF`](https://github.com/google/tangent/blob/v0.1.9/tangent/anf.py#L49) changes the AST returned by [`resolve_calls`](https://github.com/google/tangent/blob/v0.1.9/tangent/annotate.py#L83) into ANF.  `ANF` is a subclass of [`transformers.TreeTransformer`](https://github.com/google/tangent/blob/v0.1.9/tangent/transformers.py#L26), which is in turn a subclass of `gast.NodeTransformer`, which is a subclass of `ast.NodeTransformer`.  Please refer to [this short tutorial](https://github.com/wangkuiyi/fluid/wiki/python-abstract-syntax-tree) for more information about NodeTransformer that is necessary before reading the class `ANF`.
+The class [`ANF`](https://github.com/google/tangent/blob/v0.1.9/tangent/anf.py#L49) changes the AST returned by [`resolve_calls`](https://github.com/google/tangent/blob/v0.1.9/tangent/annotate.py#L83) into ANF.  `ANF` is a subclass of [`transformers.TreeTransformer`](https://github.com/google/tangent/blob/v0.1.9/tangent/transformers.py#L26), which is in turn a subclass of `gast.NodeTransformer`, which is a subclass of `ast.NodeTransformer`.  Please refer to [this short tutorial](https://github.com/wangkuiyi/notes/blob/master/python-ast.md) for more information about NodeTransformer that is necessary before reading the class `ANF`.
 
 The core of class `ANF` is the method [`ANF.trivialize(self, node)`](https://github.com/google/tangent/blob/v0.1.9/tangent/anf.py#L63), which is called by visit methods:
 
