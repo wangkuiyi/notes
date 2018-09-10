@@ -23,3 +23,5 @@ Base classes are specified at the definition:
 ```python
 class A(BaseClass1, BaseClass2, ...):
 ```
+
+For what metaclasses can do, please refer to [this primer article](https://jakevdp.github.io/blog/2012/12/01/a-primer-on-python-metaclasses/).
