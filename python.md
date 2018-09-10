@@ -6,3 +6,7 @@
 
 To enable the overriding of `__new__`, the class, if defined in Python 2.x, must inherits from the base class `object`.  
 For more information, please refer [this article](https://spyhce.com/blog/understanding-new-and-init).
+
+## metaclass and base class
+
+Metaclass is not the base class, because when we call `obj.some_method`, Python doesn't looks for the method named `some_method` in metaclasses, but it does for base classes. For more details, please refer to [this answer](https://stackoverflow.com/a/17802762).
