@@ -1,0 +1,181 @@
+工业机器学习的故事
+Stories about Industrial Machine Learning
+
+王益（奎懿）
+Principal Engineer, 蚂蚁金服
+yi.w@antfin.com
+
+* 本文将介绍的故事
+
+- 2007 ~ 2010: Google（中国）. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][pFP]]
+- 2010 ~ 2014: 腾讯. Engineering Director. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
+- 2014: LinkedIn. Senior Staff Data Scientist.
+- 2015: Scaled Inference. Head of Research Scientist.
+- 2016 ~ 2018: Baidu美国研究院. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][AI Cloud]], [[http://www.paddlepaddle.org/][PaddlePaddle]]
+
+
+* 故事覆盖的机器学习流派
+
+- 传统数据挖掘方法：pFP
+- 统计学习：pLDA、Peacock
+- 深度学习：DeepSpeech 2、PaddlePaddle、AI Cloud
+
+* 故事里模型和系统的关系
+
+- pFP：MapReduce
+- pLDA：MapReduce、MPI、Pregel
+- Peacock：专门开发的独特的分布式计算框架
+- DeepSpeech 2：Majel（MPI+RDMA+GPU DirectLink）
+- AI Cloud：TensorFlow + Kubernetes
+- PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
+
+* 学术风格和工业需求
+
+- 学术界的常见工作方式：根据数据大小确定模型复杂度，在 over-fitting 和 under-fitting 之间寻求平衡，在 precision 和 recall 之间平衡。
+
+- 工业界对机器学习的期待：用海量数据 over-fit 一个非常复杂的模型，同时求得 precision 和 recall。
+
+意图：
+
+- *读懂海量长尾数据*
+- 提升产品体验、盈利能力、技术壁垒
+
+现状：
+
+- 大部分公司、团队、个人并不能做到
+- 部分能做到的占据了极强的市场先机
+
+
+* 长尾的价值：产品体验
+
+一个古典的例子：Google 战胜 InkToMe 和 Altavisa。
+
+- 更强大的 crawling，搜罗各色网页，所以什么都能搜得到。
+- 更完善的匹配机制，所以小众 query 也能找对对应的结果。
+
+* 第一个故事：Query Recommendation
+
+问题：给定一个query，找到其他相关的 query 。
+
+挑战：Google 的 queries 很长尾
+
+- 小众query 例如“whorf piraha chomsky“ -- 什么鬼？
+
+候选方法：collaborative filtering (CF), matrix factorization (MF), restricted Boltzmann machine (BM), latent topic modeling (LTM)
+
+不足之处：都假设数据是指数族分布。CF: multinomial, MF: Gaussian, BM：beta-binomial conjugate, LTM: Dirichlet-multinomial conjugate。建模会忽略长尾，最后只能为常见 query 推荐相关的常见 queries。
+
+解法：in-frequent itemset mining
+
+- frequent itemset mining 是韩家威老师用来创立“数据挖掘”这个学术领域的经典问题
+- in-frequent itemset mining 是什么？
+
+
+* Frequent Itemset Mining
+
+给定一系列的集合，例如每个集合是一个用户一次用Google时连续搜索的几个 queries：
+
+  {啤酒、尿布、香肠}
+  {啤酒、尿布、花生米}
+  {啤酒、尿布、刮胡刀}
+  {啤酒、开瓶器}
+  {尿布、垃圾袋}
+
+上例中，一个 frequent itemset 是
+
+  {啤酒、尿布}
+
+因为它在上述五个 itemset 中的三个里出现了，比较 frequent。
+
+如果一个用户搜索了“啤酒”，相关 query 可以是“尿布”。
+
+*注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries 的。
+
+* FP-growth 和 FP-tree
+
+Frequent itemset mining 问题最著名的解法是 FP-growth。
+
+FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
+
+数据大了，FP-tree 也大，内存装不下，所以很多分布式实现把 FP-tree 分布到多台机器 —— 数数算法复杂。
+
+.image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
+
+
+* In-frequent Itemset Mining
+
+- 放弃内存数据结构 FP-tree；转而利用 Google GFS 的存储空间，使用 key-value pairs。
+- 使用 Google MapReduce 来并行地数数。
+
+Map 算法：
+
+- 输入：
+
+  key: {} value: {啤酒、尿布、香肠}
+
+- 输出
+
+  key：{啤酒}           value：{啤酒、尿布、香肠}
+  key：{尿布}           value：{啤酒、尿布、香肠}
+  key：{啤酒、尿布}      value：{啤酒、尿布、香肠}
+  key：{尿布、香肠}      value：{啤酒、尿布、香肠}
+  key：{啤酒、尿布、香肠} value: {啤酒、尿布、香肠}
+
+
+
+* 什么是长尾
+
+长尾 long-tail、重尾 heavy-tail、Power Law、小众 minority、多样化 versatile
+
+这些名字用在描述
+
+- 数据：互联网行业的数据基本都是长尾的
+- 分布：学术研究用的模型基本都是指数族分布
+- 机器学习：估计数据的分布（模型），然后做出决策
+- 和数据不匹配的模型导致错误决策
+
+以分析人们的收入（还贷能力）为例
+
+* 长尾数据
+
+如果我们把一个国家的人按照收入排序，列出每个人的收入，会得到下图中哪条曲线呢？
+
+.image https://www.statisticshowto.datasciencecentral.com/wp-content/uploads/2016/05/heavy-tailed-300x178.png 200 _
+
+极少数人很有钱；绝大部分人也能维持收入（否则人口骤减，横坐标也就不用这么长了）
+
+
+* 长尾分布
+
+上述数据的机器学习模型应该选择哪一个呢？
+高斯分布（Gaussian/normal distribution）还是柯西分布（Cauchy distribution）？
+
+.image https://i.stack.imgur.com/yosEo.png 200 _
+
+- 都是草帽形状，估计出来的均值都一样，但是方差不同
+- 高斯说：绝大部分人都完全没有收入，没有还贷能力，不值得向他们发放贷款
+- 柯西说：绝大部分人都是有收入的，为了普遍提升社会收入，应该发放小额贷款
+
+* 一个概念混淆的例子
+
+一篇风投策略分析[[https://blog.usejournal.com/power-laws-in-venture-capital-why-the-long-tail-matters-22e057c6fa34][文章]]里用了下图：
+
+.image https://cdn-images-1.medium.com/max/1200/1*_jLijWQU1YM9DbPV2YHyEg.png 180 _
+
+错！黄色图是数据。红色图是分布。两者的坐标意思都不一样，没法放在一个图里。黄色数据的分布是“截断的Cauchy”：
+
+.image http://blog.newrelic.com/wp-content/uploads/right-skewed-long-tail-distribution.png 180 _
+
+
+* 分布检验
+
+统计长尾分布的 histogram；对其横纵坐标分别取 log，并绘图。
+长尾分布的histogram如下：
+
+.image https://i.stack.imgur.com/PBdEU.png 250 _
+
+这是因为二者的函数形式：
+
+- 长尾：c log x ≈ log P(x) ：如果 x 和 P(x) 轴都是 log-scale，则应该看到一条直线。
+- 指数族：P(x) = a eᵇˣ，log P(x) ≈ c x ： 如果 x 轴是 linear-sclae，P(x) 是 log-scale 则应该看到直线。
+
