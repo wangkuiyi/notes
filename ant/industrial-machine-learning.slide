@@ -17,7 +17,7 @@ yi.w@antfin.com
 - 2010 ~ 2014: 腾讯. Engineering Director. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
 - 2014: LinkedIn. Senior Staff Data Scientist.
 - 2015: Scaled Inference. Head of Research Scientist.
-- 2016 ~ 2018: 百度 Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][AI Cloud]], [[http://www.paddlepaddle.org/][PaddlePaddle]]
+- 2016 ~ 2018: 百度 Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][PaddlePaddle EDL]]
 
 
 * 故事覆盖的机器学习流派
@@ -311,3 +311,100 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Tran
 - 199x：IBM ViaVoice：安装后，需要采集用户数据，adapt base model
 - 200x：统计模型+深度神经元网络 —— 工业应用成为可能
 - 201x：纯深度神经元网络 —— 识别能力超越人类
+
+* Deep Speech 2
+
+为了产品化最新一代技术，构建高性能机群
+
+- 计算设备：200台高性能工作站，装备 Titian X GPU
+- 网络通信：InfiniBand —— 最快的RDMA网络方案
+- 优化通信速度：定制 MPICH 的 AllReduce 操作，利用InfiniBand 和 DirectLink
+- 优化计算速度：定制化 TensorFlow：[[https://github.com/baidu-research/tensorflow-allreduce/][TensorFlow AllReduce]] 
+- 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
+- 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
+
+* 高性能计算的低效率
+
+- 实际用法：工程师修改了模型，想试试效果。提交作业，申请32个GPU
+- Partition 一共有 32个 GPU，但有个作业正在用4个，所以新作业必须等待，不知多长时间
+- 机群利用率低：4/32 = 12.5%
+- 团队工作效率低：等待实验结果，不能快速迭代
+
+适用于小团队，大家互相讨论，规划调度
+
+* 解决思路：弹性作业调度
+
+- 先用28个GPU跑起来。日后第一个作业结束了，再增加进程把释放的4个用起来
+- 也可能需要杀掉一些进程来释放资源，以启动后来的但是优先级更高的作业
+
+效果：
+
+- 人员等待时间 → 0
+- 机群利用率 → 100%
+
+挑战：
+
+- 深度学习训练框架：容错：进程数量变化不会导致作业失败
+- 调度系统：根据优先级调整作业的进程数量
+
+
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
+
+- 机群总体利用率 90%
+
+.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
+
+
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+
+
+* 研发历程
+
+历时两年，团结百度内外的力量
+
+1. 在百度拓展 TensorFlow 支持容错 —— 贡献被Google的工程师拒绝
+2. 修改 Mesos 的调度逻辑，支持弹性调度 —— 调度器是一个函数，很复杂，难以测试
+3. Kubernetes 用一组 controllers 协同调度，易于扩展 —— 百度没有机群
+4. 帮助朋友公司部署 Kubernetes，人手不够 —— 组织开源社区 https://github.com/k8sp
+5. 社区兴旺起来 —— 部署 Kubernetes + TensorFlow 到[[https://www.unisound.com/news/news16-8.html][云知声、百分点、招商银行等]]
+6. 引起业界关注 —— PaddlePaddle 的负责人徐伟老师邀请我加入
+7. 基于 PaddlePaddle 实现了容错 —— 开源给社区
+
+* 总体系统架构
+
+.image figures/unisound-arch.png 380 _
+
+- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
+- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
+
+* 第二首插曲：徐鹏老师的 GBR 框架
+
+* Google：多种框架解决不同问题
+
+- 所有程序都是分布式的，没有单机程序。都跑在一个分布式操作系统 Borg 上。
+- 没有学校里常用的 MPI —— 移植 MPICH 到 BorgMPI 没人用，因为不能容错。
+- 容错很重要：一个分布式作业里的进程，可能因为各种原因失败；不希望作业因此失败。
+- 基于 Borg，很容易开发各种分布式框架，方便编程。徐鹏老师的 GBR。
+
+* 开源行业：一个框架解决所有问题
+
+- 用 MapReduce 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
+- Spark 解决在线数据处理、机器学习、SQL。
+
+各种分布式框架基于同一个分布式操作系统
+
+- YARN、Mesos、Kubernetes
+
+* 对第三个故事的反思
+
+- 基础架构工作通常不是一家公司可以做好的；开放式战略很重要
+- 竭尽全力，悍不畏死
+
+* 深度学习框架和容错
+
+- 留待下次分享
+
