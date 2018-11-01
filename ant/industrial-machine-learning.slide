@@ -2,22 +2,22 @@
 Stories about Industrial Machine Learning
 
 王益
-Principal Engineer, 蚂蚁金服
+蚂蚁金服研究员
 yi.w@antfin.com
 
 * 故事
 
-- 第一个故事：工业机器学习 提升 搜索产品体验
-- 第二个故事：工业机器学习 优化 广告盈利能力
-- 第三个故事：工业机器学习 建立 语音技术壁垒
+- 第一个故事：提升搜索产品体验
+- 第二个故事：优化广告盈利能力
+- 第三个故事：建立语音技术壁垒
 
 * 故事背景和亲身经历
 
 - 2007 ~ 2010: Google（中国）. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][PFP]]
 - 2010 ~ 2014: 腾讯. Engineering Director. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
 - 2014: LinkedIn. Senior Staff Data Scientist.
-- 2015: Scaled Inference. Head of Research Scientist.
-- 2016 ~ 2018: 百度 Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][PaddlePaddle EDL]]
+- 2015: Scaled Inference. Research Head.
+- 2016 ~ 2018: 百度 Silicon Valley Research. T10研究员. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][PaddlePaddle EDL]]
 
 
 * 故事覆盖的机器学习流派
