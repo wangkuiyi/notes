@@ -344,8 +344,8 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 
 挑战：
 
-- 深度学习训练框架：容错：进程数量变化不会导致作业失败
-- 调度系统：根据优先级调整作业的进程数量
+- 高容错的深度学习训练框架：进程数量变化不会导致作业失败
+- 弹性调度系统：根据优先级调整作业的进程数量
 
 
 * PaddlePaddle Elastic Deep Learning (EDL)
