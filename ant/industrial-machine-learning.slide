@@ -1,0 +1,410 @@
+工业机器学习的故事
+Stories about Industrial Machine Learning
+
+王益
+Principal Engineer, 蚂蚁金服
+yi.w@antfin.com
+
+* 故事
+
+- 第一个故事：工业机器学习 提升 搜索产品体验
+- 第二个故事：工业机器学习 优化 广告盈利能力
+- 第三个故事：工业机器学习 建立 语音技术壁垒
+
+* 故事背景和亲身经历
+
+- 2007 ~ 2010: Google（中国）. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][PFP]]
+- 2010 ~ 2014: 腾讯. Engineering Director. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
+- 2014: LinkedIn. Senior Staff Data Scientist.
+- 2015: Scaled Inference. Head of Research Scientist.
+- 2016 ~ 2018: 百度 Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][PaddlePaddle EDL]]
+
+
+* 故事覆盖的机器学习流派
+
+- 传统数据挖掘方法：PFP
+- 统计学习：pLDA、Peacock
+- 深度学习：DeepSpeech 2、PaddlePaddle、AI Cloud
+
+* 故事覆盖的计算基础架构
+
+- PFP：MapReduce
+- pLDA：MapReduce、MPI、Pregel
+- Peacock：专门开发的独特的分布式计算框架
+- DeepSpeech 2：Majel（MPI+RDMA+GPU DirectLink）
+- AI Cloud：TensorFlow + Kubernetes
+- PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
+
+* 工业机器学习
+
+* 工业界和学术界
+
+- 学术界的常见工作方式：根据数据大小确定模型复杂度，在 over-fitting 和 under-fitting 之间寻求平衡，在 precision 和 recall 之间平衡。
+
+- 工业界对机器学习的期待：用海量数据 over-fit 一个非常复杂的模型，同时求得 precision 和 recall，读懂海量长尾数据。
+
+* 三个故事
+
+读懂海量长尾数据的好处
+
+- 提升产品体验
+- 提高盈利能力
+- 建立技术壁垒
+
+
+* 第一个故事：提升搜索产品体验
+
+* 故事背景
+
+Google 后来居上，战胜 Inktome 和 Altavisa。
+
+- 更强大的 crawling，搜罗各色网页，所以什么都能搜得到。
+- 更完善的匹配机制，所以小众 query 也能找对对应的结果。
+
+* Google Query Recommendation
+
+问题：给定一个query，找到其他相关的 query 。
+
+挑战：Google 的 queries 很长尾 —— “whorf piraha chomsky“
+
+候选方法：
+
+- collaborative filtering: 假设数据分布 multinomial
+- matrix factorization: 假设数据分布 Gaussian
+- restricted Boltzmann machine: 假设数据分布 beta-binomial
+- latent topic modeling: 假设数据分布 Dirichlet-multinomial
+
+不足之处：都是指数族分布，都忽略长尾，只能为常见 query 推荐相关的常见 queries。
+
+尝试解法：in-frequent itemset mining
+
+
+* Frequent Itemset Mining
+
+给定一系列的集合，例如每个集合是一个用户一次用Google时连续搜索的几个 queries：
+
+  {啤酒、尿布、香肠}
+  {啤酒、尿布、花生米}
+  {啤酒、尿布、刮胡刀}
+  {啤酒、开瓶器}
+  {尿布、垃圾袋}
+
+上例中，一个 frequent itemset 是
+
+  {啤酒、尿布}
+
+因为它在上述五个 itemset 中的三个里出现了，比较 frequent。
+
+如果一个用户搜索了“啤酒”，相关 query 可以是“尿布”。
+
+*注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries 的。
+
+
+* In-frequent Itemset Mining
+
+PFP: Parallel FP-Growth for Query Recommendation. WWW 2008.
+
+.image figures/pfp.png 350 _
+
+- 如果有人搜索了 Whorf Piraha，这可能是一个什么人？—— 一个语言学学生。
+- 如果给她推荐一本语言学教材她买不买？—— 远高于搜索引擎 1% 的平均转化率。
+
+* FP-growth 和 FP-tree
+
+Frequent itemset mining 问题最著名的解法是 FP-growth。
+
+FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
+
+数据大了，FP-tree 也大，内存装不下，所以很多分布式实现把 FP-tree 分布到多台机器 —— 数数算法复杂。
+
+.image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
+
+
+* PFP for In-frequent Itemset Mining
+
+- 放弃内存数据结构 FP-tree；转而利用 Google GFS 几乎无限的存储空间。
+- 使用 Google MapReduce 来并行地数数。
+
+MapReduce 算法（过渡简化，以便划重点；详见论文）
+
+- 输入：
+
+  key: {啤酒、尿布}     value: {}
+  key: {啤酒、开瓶器}   value: {}
+
+- 输出
+
+  key：{啤酒}           value：2
+  key：{尿布}           value：1
+  key：{啤酒、尿布}      value：1
+  key：{啤酒、开瓶器}    value：1
+
+P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
+
+* 关于第一个故事的反思
+
+建模长尾数据需要敢于 *离经叛道*：
+
+重新定义问题：frequent itemset mining ==> in-frequent itemset mining
+
+探寻 revolutionary 的解法，而不是 evolutionary 的：
+
+- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
+- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
+- 关注大数据技术：Google MapReduce 和 GFS
+
+
+* 一首插曲：长尾数据和长尾分布
+
+* 什么是长尾
+
+长尾 long-tail、重尾 heavy-tail、Power Law、小众 minority、多样化 versatile
+
+这些名字用在描述
+
+- 数据：互联网行业的数据基本都是长尾的
+- 分布：学术研究用的模型基本都是指数族分布
+- 机器学习：估计数据的分布（模型），然后做出决策
+- 和数据不匹配的模型导致错误决策
+
+以分析人们的收入（还贷能力）为例
+
+* 长尾数据
+
+如果我们把一个国家的人按照收入排序，列出每个人的收入，会得到下图中哪条曲线呢？
+
+.image https://www.statisticshowto.datasciencecentral.com/wp-content/uploads/2016/05/heavy-tailed-300x178.png 200 _
+
+极少数人很有钱；绝大部分人也能维持收入（否则人口骤减，横坐标也就不用这么长了）
+
+
+* 长尾分布
+
+上述数据的机器学习模型应该选择哪一个呢？
+高斯分布（Gaussian/normal distribution）还是柯西分布（Cauchy distribution）？
+
+.image https://i.stack.imgur.com/yosEo.png 200 _
+
+- 都是草帽形状，估计出来的均值都一样，但是方差不同
+- 高斯说：绝大部分人都完全没有收入，没有还贷能力，不值得向他们发放贷款
+- 柯西说：绝大部分人都是有收入的，为了普遍提升社会收入，应该发放小额贷款
+
+* 一个概念混淆的例子
+
+一篇风投策略分析[[https://blog.usejournal.com/power-laws-in-venture-capital-why-the-long-tail-matters-22e057c6fa34][文章]]里用了下图：
+
+.image https://cdn-images-1.medium.com/max/1200/1*_jLijWQU1YM9DbPV2YHyEg.png 180 _
+
+错！黄色图是数据。红色图是分布。两者的坐标意思都不一样，没法放在一个图里。黄色数据的分布是“截断的Cauchy”：
+
+.image http://blog.newrelic.com/wp-content/uploads/right-skewed-long-tail-distribution.png 180 _
+
+
+* 分布检验
+
+统计长尾分布的 histogram；对其横纵坐标分别取 log，并绘图。
+长尾分布的histogram如下：
+
+.image https://i.stack.imgur.com/PBdEU.png 250 _
+
+这是因为二者的函数形式：
+
+- 长尾：c log x ≈ log P(x) ：如果 x 和 P(x) 轴都是 log-scale，则应该看到一条直线。
+- 指数族：P(x) = a eᵇˣ，log P(x) ≈ c x ： 如果 x 轴是 linear-sclae，P(x) 是 log-scale 则应该看到直线。
+
+
+* 第二个故事：提升广告盈利能力
+
+* 故事背景
+
+- 2010年，腾讯搜索广告
+- Retrieval 部分用的是常见的文本匹配（vector-model）技术。
+- 一个卖红酒的广告主的投诉：如果用户搜索“红酒木瓜汤”，不应该展示红酒广告。
+- “红酒木瓜汤”是什么？
+
+* 红酒木瓜汤
+
+一个民间丰胸秘方
+
+- 既不能出“红酒”广告、也不能“木瓜”、也不能“靓汤”或者“餐馆”
+- 文本匹配不行，需要语义匹配
+- 类似例子：“母亲节” => “康乃馨”， “情人节” => “巧克力”、“玫瑰”
+
+理解语义的技术和推荐一样：
+
+- collaborative filtering: 假设数据分布 multinomial
+- matrix factorization: 假设数据分布 Gaussian
+- restricted Boltzmann machine: 假设数据分布 beta-binomial
+- latent topic modeling: 假设数据分布 Dirichlet-multinomial
+
+* 指数族分布模型的效果
+
+pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 2009. https://code.google.com/archive/p/plda/
+
+- LDA 的训练算法把“频繁共现”的多个词聚为一类，称为一个topic
+- inference程序可以推演出任何一个句子（若干words）的topic distribution
+
+不足之处：
+
+- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200 “高频”topics。
+- 即使通过分布式计算，可以用很大量数据训练，可以得到很多topics，但是大都重复。
+- 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤“这样的小众语义。
+
+解决方法：
+
+- Peacock系统：从十TB文本数据，学习接近一百万topics。
+
+
+* Peacock 系统的效果
+
+.image ./figures/红酒木瓜汤.png
+
+* 更多有意思的结果
+
+.image figures/苹果.png
+
+* 更多有意思的结果
+
+.image figures/苹果价格.png
+
+* 更多有意思的结果
+
+.image figures/苹果大尺度.png
+
+* 更多有意思的结果
+
+.image figures/莫代尔.png
+
+* Peacock 系统介绍
+
+Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Transactions on Intelligent Systems and Technology. 2015.
+
+如何做到的：
+
+- LDA 假设 topics 的先验分布是 Dirichlet distribution。 Peacock 假设是 Dirichlet process -- 无穷多topics上的 Dirichlet distribution。
+- 基于 Dirichlet process 的模型，训练算法非常复杂，进程间通信的模式很复杂，一旦一个进程失败，整个作业无法错误恢复：Hierarchical Dirichlet Processes (HDP)。
+- 需要一个数学上的近似（approximation）算法。而分布式计算的工程技法使得数学上的近似成为可能：
+- Peacock 通过在分布式计算时使用 model parallelism 技法，支持学习很大的模型，topics 数量很多，从而用 Dirichlet distribution 的算法，来学习趋近 Dirichlet process 效果的模型
+
+* 关于第二个故事的反思
+
+数学方法改进和系统工程改进的互相依赖
+
+- pLSA, LDA, etc：既不改数学方法，也不改计算方式
+- pLDA：不改数学方法，只做分布式计算
+- HDP：只改数学方法，没法分布式计算
+- Peacock：通过提出 approximate 数学方法，使得算法简单，可以并行计算；因为数据并行，所以 approximation 逼真。
+
+知乎问题：搞架构和搞算法，哪个更牛一些？
+
+- [[https://www.zhihu.com/question/26622836/answer/34196133][我的回答]]：“我以为 ... 应该（甚至必须）二者得兼。”
+
+
+* 第三个故事：建立语音识别技术壁垒
+
+* 故事背景
+
+语音识别技术的发展：
+
+- 195x：语言学模型：音频->音素序列，音素->拼音，拼音->文字
+- 196x：统计模型：hidden Markov model
+- 199x：IBM ViaVoice：安装后，需要采集用户数据，adapt base model
+- 200x：统计模型+深度神经元网络 —— 工业应用成为可能
+- 201x：纯深度神经元网络 —— 识别能力超越人类
+
+* Deep Speech 2
+
+为了产品化最新一代技术，构建高性能机群
+
+- 计算设备：200台高性能工作站，装备 Titian X GPU
+- 网络通信：InfiniBand —— 最快的RDMA网络方案
+- 优化通信速度：定制 MPICH 的 AllReduce 操作，利用InfiniBand 和 DirectLink
+- 优化计算速度：定制化 TensorFlow：[[https://github.com/baidu-research/tensorflow-allreduce/][TensorFlow AllReduce]] 
+- 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
+- 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
+
+* 高性能计算的低效率
+
+- 实际用法：工程师修改了模型，想试试效果。提交作业，申请32个GPU
+- Partition 一共有 32个 GPU，但有个作业正在用4个，所以新作业必须等待，不知多长时间
+- 机群利用率低：4/32 = 12.5%
+- 团队工作效率低：等待实验结果，不能快速迭代
+
+适用于小团队，大家互相讨论，规划调度
+
+* 解决思路：弹性作业调度
+
+- 先用28个GPU跑起来。日后第一个作业结束了，再增加进程把释放的4个用起来
+- 也可能需要杀掉一些进程来释放资源，以启动后来的但是优先级更高的作业
+
+效果：
+
+- 人员等待时间 → 0
+- 机群利用率 → 100%
+
+挑战：
+
+- 深度学习训练框架：容错：进程数量变化不会导致作业失败
+- 调度系统：根据优先级调整作业的进程数量
+
+
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
+
+- 机群总体利用率 90%
+
+.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
+
+
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+
+
+* 研发历程
+
+历时两年，团结百度内外的力量
+
+1. 在百度拓展 TensorFlow 支持容错 —— 贡献被Google的工程师拒绝
+2. 修改 Mesos 的调度逻辑，支持弹性调度 —— 调度器是一个函数，很复杂，难以测试
+3. Kubernetes 用一组 controllers 协同调度，易于扩展 —— 百度没有机群
+4. 帮助朋友公司部署 Kubernetes，人手不够 —— 组织开源社区 https://github.com/k8sp
+5. 社区兴旺起来 —— 部署 Kubernetes + TensorFlow 到[[https://www.unisound.com/news/news16-8.html][云知声、百分点、招商银行等]]
+6. 引起业界关注 —— PaddlePaddle 的负责人徐伟老师邀请我加入
+7. 基于 PaddlePaddle 实现了容错 —— 开源给社区
+
+* 总体系统架构
+
+.image figures/unisound-arch.png 380 _
+
+- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
+- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
+
+* 第二首插曲：徐鹏老师的 GBR 框架
+
+* Google：多种框架解决不同问题
+
+- 所有程序都是分布式的，没有单机程序。都跑在一个分布式操作系统 Borg 上。
+- 没有学校里常用的 MPI —— 移植 MPICH 到 BorgMPI 没人用，因为不能容错。
+- 容错很重要：一个分布式作业里的进程，可能因为各种原因失败；不希望作业因此失败。
+- 基于 Borg，很容易开发各种分布式框架，方便编程。徐鹏老师的 GBR。
+
+* 开源行业：一个框架解决所有问题
+
+- 用 MapReduce 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
+- Spark 解决在线数据处理、机器学习、SQL。
+
+各种分布式框架基于同一个分布式操作系统
+
+- YARN、Mesos、Kubernetes
+
+* 对第三个故事的反思
+
+- 基础架构工作通常不是一家公司可以做好的；开放式战略很重要
+- 竭尽全力，悍不畏死
+
+* 深度学习框架和容错
+
+- 留待下次分享
+
