@@ -5,33 +5,39 @@ Stories about Industrial Machine Learning
 Principal Engineer, 蚂蚁金服
 yi.w@antfin.com
 
-* 本文将介绍的故事
+* 故事
 
-- 2007 ~ 2010: Google（中国）. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][pFP]]
+- 第一个故事：工业机器学习 提升 搜索产品体验
+- 第二个故事：工业机器学习 优化 广告盈利能力
+- 第三个故事：工业机器学习 建立 语音技术壁垒
+
+* 故事背景和亲身经历
+
+- 2007 ~ 2010: Google（中国）. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][PFP]]
 - 2010 ~ 2014: 腾讯. Engineering Director. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
 - 2014: LinkedIn. Senior Staff Data Scientist.
 - 2015: Scaled Inference. Head of Research Scientist.
-- 2016 ~ 2018: Baidu美国研究院. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][AI Cloud]], [[http://www.paddlepaddle.org/][PaddlePaddle]]
+- 2016 ~ 2018: 百度 Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][AI Cloud]], [[http://www.paddlepaddle.org/][PaddlePaddle]]
 
 
 * 故事覆盖的机器学习流派
 
-- 传统数据挖掘方法：pFP
+- 传统数据挖掘方法：PFP
 - 统计学习：pLDA、Peacock
 - 深度学习：DeepSpeech 2、PaddlePaddle、AI Cloud
 
-* 故事里模型和系统的关系
+* 故事覆盖的计算基础架构
 
-- pFP：MapReduce
+- PFP：MapReduce
 - pLDA：MapReduce、MPI、Pregel
 - Peacock：专门开发的独特的分布式计算框架
 - DeepSpeech 2：Majel（MPI+RDMA+GPU DirectLink）
 - AI Cloud：TensorFlow + Kubernetes
 - PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
 
-* 学术界和工业界
+* 工业机器学习
 
-* 工作目标决定工作风格
+* 工业界和学术界
 
 - 学术界的常见工作方式：根据数据大小确定模型复杂度，在 over-fitting 和 under-fitting 之间寻求平衡，在 precision 和 recall 之间平衡。
 
@@ -119,7 +125,7 @@ FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 - 放弃内存数据结构 FP-tree；转而利用 Google GFS 几乎无限的存储空间。
 - 使用 Google MapReduce 来并行地数数。
 
-MapReduce 算法（过渡简化，以便划重点）
+MapReduce 算法（过渡简化，以便划重点；详见论文）
 
 - 输入：
 
@@ -222,7 +228,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 - 既不能出“红酒”广告、也不能“木瓜”、也不能“靓汤”或者“餐馆”
 - 文本匹配不行，需要语义匹配
-- “母亲节” <=> “康乃馨”， “情人节” <=> “巧克力”、“玫瑰”
+- 类似例子：“母亲节” => “康乃馨”， “情人节” => “巧克力”、“玫瑰”
 
 理解语义的技术和推荐一样：
 
@@ -233,7 +239,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 * 指数族分布模型的效果
 
-PLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 2009. https://code.google.com/archive/p/plda/
+pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 2009. https://code.google.com/archive/p/plda/
 
 - LDA 的训练算法把“频繁共现”的多个词聚为一类，称为一个topic
 - inference程序可以推演出任何一个句子（若干words）的topic distribution
@@ -285,7 +291,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Tran
 数学方法改进和系统工程改进的互相依赖
 
 - pLSA, LDA, etc：既不改数学方法，也不改计算方式
-- PLDA：不改数学方法，只做分布式计算
+- pLDA：不改数学方法，只做分布式计算
 - HDP：只改数学方法，没法分布式计算
 - Peacock：通过提出 approximate 数学方法，使得算法简单，可以并行计算；因为数据并行，所以 approximation 逼真。
 
@@ -294,6 +300,14 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Tran
 - [[https://www.zhihu.com/question/26622836/answer/34196133][我的回答]]：“我以为 ... 应该（甚至必须）二者得兼。”
 
 
-* 第三个故事：建立百度语音技术壁垒
+* 第三个故事：建立语音识别技术壁垒
 
 * 故事背景
+
+语音识别技术的发展：
+
+- 195x：语言学模型：音频->音素序列，音素->拼音，拼音->文字
+- 196x：统计模型：hidden Markov model
+- 199x：IBM ViaVoice：安装后，需要采集用户数据，adapt base model
+- 200x：统计模型+深度神经元网络 —— 工业应用成为可能
+- 201x：纯深度神经元网络 —— 识别能力超越人类
