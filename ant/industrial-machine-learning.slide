@@ -1,7 +1,7 @@
 工业机器学习的故事
 Stories about Industrial Machine Learning
 
-王益（奎懿）
+王益
 Principal Engineer, 蚂蚁金服
 yi.w@antfin.com
 
@@ -29,46 +29,48 @@ yi.w@antfin.com
 - AI Cloud：TensorFlow + Kubernetes
 - PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
 
-* 学术风格和工业需求
+* 学术界和工业界
+
+* 工作目标决定工作风格
 
 - 学术界的常见工作方式：根据数据大小确定模型复杂度，在 over-fitting 和 under-fitting 之间寻求平衡，在 precision 和 recall 之间平衡。
 
-- 工业界对机器学习的期待：用海量数据 over-fit 一个非常复杂的模型，同时求得 precision 和 recall。
+- 工业界对机器学习的期待：用海量数据 over-fit 一个非常复杂的模型，同时求得 precision 和 recall，读懂海量长尾数据。
 
-意图：
+* 三个故事
 
-- *读懂海量长尾数据*
-- 提升产品体验、盈利能力、技术壁垒
+读懂海量长尾数据的好处
 
-现状：
-
-- 大部分公司、团队、个人并不能做到
-- 部分能做到的占据了极强的市场先机
+- 提升产品体验
+- 提高盈利能力
+- 建立技术壁垒
 
 
-* 长尾的价值：产品体验
+* 第一个故事：提升搜索产品体验
 
-一个古典的例子：Google 战胜 InkToMe 和 Altavisa。
+* 故事背景
+
+Google 后来居上，战胜 Inktome 和 Altavisa。
 
 - 更强大的 crawling，搜罗各色网页，所以什么都能搜得到。
 - 更完善的匹配机制，所以小众 query 也能找对对应的结果。
 
-* 第一个故事：Query Recommendation
+* Google Query Recommendation
 
 问题：给定一个query，找到其他相关的 query 。
 
-挑战：Google 的 queries 很长尾
+挑战：Google 的 queries 很长尾 —— “whorf piraha chomsky“
 
-- 小众query 例如“whorf piraha chomsky“ -- 什么鬼？
+候选方法：
 
-候选方法：collaborative filtering (CF), matrix factorization (MF), restricted Boltzmann machine (BM), latent topic modeling (LTM)
+- collaborative filtering: 假设数据分布 multinomial
+- matrix factorization: 假设数据分布 Gaussian
+- restricted Boltzmann machine: 假设数据分布 beta-binomial
+- latent topic modeling: 假设数据分布 Dirichlet-multinomial
 
-不足之处：都假设数据是指数族分布。CF: multinomial, MF: Gaussian, BM：beta-binomial conjugate, LTM: Dirichlet-multinomial conjugate。建模会忽略长尾，最后只能为常见 query 推荐相关的常见 queries。
+不足之处：都是指数族分布，都忽略长尾，只能为常见 query 推荐相关的常见 queries。
 
-解法：in-frequent itemset mining
-
-- frequent itemset mining 是韩家威老师用来创立“数据挖掘”这个学术领域的经典问题
-- in-frequent itemset mining 是什么？
+尝试解法：in-frequent itemset mining
 
 
 * Frequent Itemset Mining
@@ -91,6 +93,16 @@ yi.w@antfin.com
 
 *注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries 的。
 
+
+* In-frequent Itemset Mining
+
+PFP: Parallel FP-Growth for Query Recommendation. WWW 2008.
+
+.image figures/pfp.png 350 _
+
+- 如果有人搜索了 Whorf Piraha，这可能是一个什么人？—— 一个语言学学生。
+- 如果给她推荐一本语言学教材她买不买？—— 远高于搜索引擎 1% 的平均转化率。
+
 * FP-growth 和 FP-tree
 
 Frequent itemset mining 问题最著名的解法是 FP-growth。
@@ -102,26 +114,41 @@ FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 .image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
 
 
-* In-frequent Itemset Mining
+* PFP for In-frequent Itemset Mining
 
-- 放弃内存数据结构 FP-tree；转而利用 Google GFS 的存储空间，使用 key-value pairs。
+- 放弃内存数据结构 FP-tree；转而利用 Google GFS 几乎无限的存储空间。
 - 使用 Google MapReduce 来并行地数数。
 
-Map 算法：
+MapReduce 算法（过渡简化，以便划重点）
 
 - 输入：
 
-  key: {} value: {啤酒、尿布、香肠}
+  key: {啤酒、尿布}     value: {}
+  key: {啤酒、开瓶器}   value: {}
 
 - 输出
 
-  key：{啤酒}           value：{啤酒、尿布、香肠}
-  key：{尿布}           value：{啤酒、尿布、香肠}
-  key：{啤酒、尿布}      value：{啤酒、尿布、香肠}
-  key：{尿布、香肠}      value：{啤酒、尿布、香肠}
-  key：{啤酒、尿布、香肠} value: {啤酒、尿布、香肠}
+  key：{啤酒}           value：2
+  key：{尿布}           value：1
+  key：{啤酒、尿布}      value：1
+  key：{啤酒、开瓶器}    value：1
+
+P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
+
+* 关于第一个故事的反思
+
+建模长尾数据需要敢于 *离经叛道*：
+
+重新定义问题：frequent itemset mining ==> in-frequent itemset mining
+
+探寻 revolutionary 的解法，而不是 evolutionary 的：
+
+- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
+- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
+- 关注大数据技术：Google MapReduce 和 GFS
 
 
+* 一首插曲：长尾数据和长尾分布
 
 * 什么是长尾
 
@@ -179,3 +206,94 @@ Map 算法：
 - 长尾：c log x ≈ log P(x) ：如果 x 和 P(x) 轴都是 log-scale，则应该看到一条直线。
 - 指数族：P(x) = a eᵇˣ，log P(x) ≈ c x ： 如果 x 轴是 linear-sclae，P(x) 是 log-scale 则应该看到直线。
 
+
+* 第二个故事：提升广告盈利能力
+
+* 故事背景
+
+- 2010年，腾讯搜索广告
+- Retrieval 部分用的是常见的文本匹配（vector-model）技术。
+- 一个卖红酒的广告主的投诉：如果用户搜索“红酒木瓜汤”，不应该展示红酒广告。
+- “红酒木瓜汤”是什么？
+
+* 红酒木瓜汤
+
+一个民间丰胸秘方
+
+- 既不能出“红酒”广告、也不能“木瓜”、也不能“靓汤”或者“餐馆”
+- 文本匹配不行，需要语义匹配
+- “母亲节” <=> “康乃馨”， “情人节” <=> “巧克力”、“玫瑰”
+
+理解语义的技术和推荐一样：
+
+- collaborative filtering: 假设数据分布 multinomial
+- matrix factorization: 假设数据分布 Gaussian
+- restricted Boltzmann machine: 假设数据分布 beta-binomial
+- latent topic modeling: 假设数据分布 Dirichlet-multinomial
+
+* 指数族分布模型的效果
+
+PLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 2009. https://code.google.com/archive/p/plda/
+
+- LDA 的训练算法把“频繁共现”的多个词聚为一类，称为一个topic
+- inference程序可以推演出任何一个句子（若干words）的topic distribution
+
+不足之处：
+
+- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200 “高频”topics。
+- 即使通过分布式计算，可以用很大量数据训练，可以得到很多topics，但是大都重复。
+- 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤“这样的小众语义。
+
+解决方法：
+
+- Peacock系统：从十TB文本数据，学习接近一百万topics。
+
+
+* Peacock 系统的效果
+
+.image ./figures/红酒木瓜汤.png
+
+* 更多有意思的结果
+
+.image figures/苹果.png
+
+* 更多有意思的结果
+
+.image figures/苹果价格.png
+
+* 更多有意思的结果
+
+.image figures/苹果大尺度.png
+
+* 更多有意思的结果
+
+.image figures/莫代尔.png
+
+* Peacock 系统介绍
+
+Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Transactions on Intelligent Systems and Technology. 2015.
+
+如何做到的：
+
+- LDA 假设 topics 的先验分布是 Dirichlet distribution。 Peacock 假设是 Dirichlet process -- 无穷多topics上的 Dirichlet distribution。
+- 基于 Dirichlet process 的模型，训练算法非常复杂，进程间通信的模式很复杂，一旦一个进程失败，整个作业无法错误恢复：Hierarchical Dirichlet Processes (HDP)。
+- 需要一个数学上的近似（approximation）算法。而分布式计算的工程技法使得数学上的近似成为可能：
+- Peacock 通过在分布式计算时使用 model parallelism 技法，支持学习很大的模型，topics 数量很多，从而用 Dirichlet distribution 的算法，来学习趋近 Dirichlet process 效果的模型
+
+* 关于第二个故事的反思
+
+数学方法改进和系统工程改进的互相依赖
+
+- pLSA, LDA, etc：既不改数学方法，也不改计算方式
+- PLDA：不改数学方法，只做分布式计算
+- HDP：只改数学方法，没法分布式计算
+- Peacock：通过提出 approximate 数学方法，使得算法简单，可以并行计算；因为数据并行，所以 approximation 逼真。
+
+知乎问题：搞架构和搞算法，哪个更牛一些？
+
+- [[https://www.zhihu.com/question/26622836/answer/34196133][我的回答]]：“我以为 ... 应该（甚至必须）二者得兼。”
+
+
+* 第三个故事：建立百度语音技术壁垒
+
+* 故事背景
