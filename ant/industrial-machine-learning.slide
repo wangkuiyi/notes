@@ -63,7 +63,7 @@ Google 后来居上，战胜 Inktome 和 Altavisa。
 
 * Google Query Recommendation
 
-问题：给定一个query，找到其他相关的 query 。
+问题：给定一个query，找到其他相关的 queries 。
 
 挑战：Google 的 queries 很长尾 —— “whorf piraha chomsky“
 
@@ -97,12 +97,12 @@ Google 后来居上，战胜 Inktome 和 Altavisa。
 
 如果一个用户搜索了“啤酒”，相关 query 可以是“尿布”。
 
-*注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries 的。
+*注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries。
 
 
 * Infrequent Itemset Mining
 
-PFP: Parallel FP-Growth for Query Recommendation. WWW 2008.
+PFP: Parallel FP-Growth for Query Recommendation. [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][WWW 2008]]
 
 .image figures/pfp.png 350 _
 
@@ -111,7 +111,7 @@ PFP: Parallel FP-Growth for Query Recommendation. WWW 2008.
 
 * FP-growth 和 FP-tree
 
-Frequent itemset mining 问题最著名的解法是 FP-growth。
+Frequent itemset mining 问题最著名的解法是 [[https://en.wikipedia.org/wiki/Association_rule_learning#FP-growth_algorithm][FP-growth]]。
 
 FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 
@@ -158,7 +158,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 * 什么是长尾
 
-长尾 long-tail、重尾 heavy-tail、Power Law、小众 minority、多样化 versatile
+长尾 long-tail、重尾 heavy-tail、Power law、小众 minority、多样化 versatile
 
 这些名字用在描述
 
@@ -167,9 +167,9 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 - 机器学习：估计数据的分布（模型），然后做出决策
 - 和数据不匹配的模型导致错误决策
 
-以分析人们的收入（还贷能力）为例
-
 * 长尾数据
+
+以分析人们的收入（还贷能力）为例
 
 如果我们把一个国家的人按照收入排序，列出每个人的收入，会得到下图中哪条曲线呢？
 
@@ -218,7 +218,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 * 故事背景
 
 - 2010年，腾讯搜索广告
-- Retrieval 部分用的是常见的文本匹配（vector-model）技术。
+- Retrieval 部分用的是常见的文本匹配（[[https://en.wikipedia.org/wiki/Vector_space_model][vector-model]）技术。
 - 一个卖红酒的广告主的投诉：如果用户搜索“红酒木瓜汤”，不应该展示红酒广告。
 - “红酒木瓜汤”是什么？
 
@@ -239,16 +239,16 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 * 指数族分布模型的效果
 
-pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 2009. https://code.google.com/archive/p/plda/
+pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][AAIM 2009]]. https://code.google.com/archive/p/plda/
 
 - LDA 的训练算法把“频繁共现”的多个词聚为一类，称为一个topic
 - inference程序可以推演出任何一个句子（若干words）的topic distribution
 
 不足之处：
 
-- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200 “高频”topics。
+- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200“高频”topics。
 - 即使通过分布式计算，可以用很大量数据训练，可以得到很多topics，但是大都重复。
-- 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤“这样的小众语义。
+- 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤”这样的小众语义。
 
 解决方法：
 
@@ -277,7 +277,7 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. AAIM 20
 
 * Peacock 系统介绍
 
-Peacock: Learning Long-Tail Topic Features for Industrial Applications. ACM Transactions on Intelligent Systems and Technology. 2015.
+Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]
 
 如何做到的：
 
