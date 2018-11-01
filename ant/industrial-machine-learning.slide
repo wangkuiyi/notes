@@ -76,7 +76,7 @@ Google 后来居上，战胜 Inktome 和 Altavisa。
 
 不足之处：都是指数族分布，都忽略长尾，只能为常见 query 推荐相关的常见 queries。
 
-尝试解法：in-frequent itemset mining
+尝试解法：infrequent itemset mining
 
 
 * Frequent Itemset Mining
@@ -100,7 +100,7 @@ Google 后来居上，战胜 Inktome 和 Altavisa。
 *注意*：“啤酒”和“尿布”都是 frequent item。所以 frequent itemset mining 也是只能为常见 query 推荐常见 queries 的。
 
 
-* In-frequent Itemset Mining
+* Infrequent Itemset Mining
 
 PFP: Parallel FP-Growth for Query Recommendation. WWW 2008.
 
@@ -120,7 +120,7 @@ FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 .image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
 
 
-* PFP for In-frequent Itemset Mining
+* PFP for Infrequent Itemset Mining
 
 - 放弃内存数据结构 FP-tree；转而利用 Google GFS 几乎无限的存储空间。
 - 使用 Google MapReduce 来并行地数数。
@@ -145,7 +145,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 建模长尾数据需要敢于 *离经叛道*：
 
-重新定义问题：frequent itemset mining ==> in-frequent itemset mining
+重新定义问题：frequent itemset mining ==> infrequent itemset mining
 
 探寻 revolutionary 的解法，而不是 evolutionary 的：
 
