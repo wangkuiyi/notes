@@ -5,11 +5,13 @@ Stories about Industrial Machine Learning
 蚂蚁金服研究员
 yi.w@antfin.com
 
+
 * 故事
 
 - 第一个故事：提升搜索产品体验
 - 第二个故事：优化广告盈利能力
 - 第三个故事：建立语音技术壁垒
+
 
 * 故事背景和亲身经历
 
@@ -26,6 +28,7 @@ yi.w@antfin.com
 - 统计学习：pLDA、Peacock
 - 深度学习：DeepSpeech 2、PaddlePaddle、AI Cloud
 
+
 * 故事覆盖的计算基础架构
 
 - PFP：MapReduce
@@ -35,13 +38,16 @@ yi.w@antfin.com
 - AI Cloud：TensorFlow + Kubernetes
 - PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
 
+
 * 工业机器学习
+
 
 * 工业界和学术界
 
 - 学术界的常见工作方式：根据数据大小确定模型复杂度，在 over-fitting 和 under-fitting 之间寻求平衡，在 precision 和 recall 之间平衡。
 
 - 工业界对机器学习的期待：用海量数据 over-fit 一个非常复杂的模型，同时求得 precision 和 recall，读懂海量长尾数据。
+
 
 * 三个故事
 
@@ -54,12 +60,14 @@ yi.w@antfin.com
 
 * 第一个故事：提升搜索产品体验
 
+
 * 故事背景
 
 Google 后来居上，战胜 Inktome 和 Altavisa。
 
 - 更强大的 crawling，搜罗各色网页，所以什么都能搜得到。
 - 更完善的匹配机制，所以小众 query 也能找到对应的结果。
+
 
 * Google Query Recommendation
 
@@ -109,7 +117,8 @@ PFP: Parallel FP-Growth for Query Recommendation. [[https://static.googleusercon
 - 如果有人搜索了 Whorf Piraha，这可能是一个什么人？—— 一个语言学学生。
 - 如果给她推荐一本语言学教材她买不买？—— 远高于搜索引擎 1% 的平均转化率。
 
-* FP-growth 和 FP-tree
+
+* 学术经典：FP-growth 和 FP-tree
 
 Frequent itemset mining 问题最著名的解法是 [[https://en.wikipedia.org/wiki/Association_rule_learning#FP-growth_algorithm][FP-growth]]。
 
@@ -120,7 +129,7 @@ FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 .image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
 
 
-* PFP for Infrequent Itemset Mining
+* 工业规模：PFP for Infrequent Itemset Mining
 
 - 放弃内存数据结构 FP-tree；转而利用 Google GFS 几乎无限的存储空间。
 - 使用 Google MapReduce 来并行地数数。
@@ -141,6 +150,7 @@ MapReduce 算法（过渡简化，以便划重点；详见论文）
 
 P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
+
 * 关于第一个故事的反思
 
 建模长尾数据需要敢于 *离经叛道*：
@@ -156,6 +166,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 * 一首插曲：长尾数据和长尾分布
 
+
 * 什么是长尾
 
 长尾 long-tail、重尾 heavy-tail、Power law、小众 minority、多样化 versatile
@@ -166,6 +177,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 - 分布：学术研究用的模型基本都是指数族分布
 - 机器学习：估计数据的分布（模型），然后做出决策
 - 和数据不匹配的模型导致错误决策
+
 
 * 长尾数据
 
@@ -189,13 +201,14 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 - 高斯说：绝大部分人都完全没有收入，没有还贷能力，不值得向他们发放贷款
 - 柯西说：绝大部分人都是有收入的，为了普遍提升社会收入，应该发放小额贷款
 
+
 * 一个概念混淆的例子
 
-一篇风投策略分析[[https://blog.usejournal.com/power-laws-in-venture-capital-why-the-long-tail-matters-22e057c6fa34][文章]]里用了下图：
+来自一家风投的一篇[[https://blog.usejournal.com/power-laws-in-venture-capital-why-the-long-tail-matters-22e057c6fa34][策略分析]]里用了下图：
 
 .image https://cdn-images-1.medium.com/max/1200/1*_jLijWQU1YM9DbPV2YHyEg.png 180 _
 
-错！黄色图是数据。红色图是分布。两者的坐标意思都不一样，没法放在一个图里。黄色数据的分布是“截断的Cauchy”：
+黄色图是数据。红色图是分布。两者的坐标意思都不一样，没法放在一个图里。黄色数据的分布是“截断的Cauchy”：
 
 .image http://blog.newrelic.com/wp-content/uploads/right-skewed-long-tail-distribution.png 180 _
 
@@ -215,12 +228,14 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 * 第二个故事：提升广告盈利能力
 
+
 * 故事背景
 
 - 2010年，腾讯搜索广告
 - Retrieval 部分用的是常见的文本匹配（[[https://en.wikipedia.org/wiki/Vector_space_model][vector-model]）技术。
 - 一个卖红酒的广告主的投诉：如果用户搜索“红酒木瓜汤”，不应该展示红酒广告。
 - “红酒木瓜汤”是什么？
+
 
 * 红酒木瓜汤
 
@@ -236,6 +251,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 - matrix factorization: 假设数据分布 Gaussian
 - restricted Boltzmann machine: 假设数据分布 beta-binomial
 - latent topic modeling: 假设数据分布 Dirichlet-multinomial
+
 
 * 指数族分布模型的效果
 
@@ -275,6 +291,7 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https
 
 .image figures/莫代尔.png
 
+
 * Peacock 系统介绍
 
 Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]
@@ -285,6 +302,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 基于 Dirichlet process 的模型，训练算法非常复杂，进程间通信的模式很复杂，一旦一个进程失败，整个作业无法错误恢复：Hierarchical Dirichlet Processes (HDP)。
 - 需要一个数学上的近似（approximation）算法。而分布式计算的工程技法使得数学上的近似成为可能：
 - Peacock 通过在分布式计算时使用 model parallelism 技法，支持学习很大的模型，topics 数量很多，从而用 Dirichlet distribution 的算法，来学习趋近 Dirichlet process 效果的模型
+
 
 * 关于第二个故事的反思
 
@@ -302,6 +320,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 
 * 第三个故事：建立语音识别技术壁垒
 
+
 * 故事背景
 
 语音识别技术的发展：
@@ -311,6 +330,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 199x：IBM ViaVoice：安装后，需要采集用户数据，adapt base model
 - 200x：统计模型+深度神经元网络 —— 工业应用成为可能
 - 201x：纯深度神经元网络 —— 识别能力超越人类
+
 
 * Deep Speech 2
 
@@ -323,6 +343,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
 - 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
 
+
 * 高性能计算的低效率
 
 - 实际用法：工程师修改了模型，想试试效果。提交作业，申请32个GPU
@@ -331,6 +352,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 团队工作效率低：等待实验结果，不能快速迭代
 
 适用于小团队，大家互相讨论，规划调度
+
 
 * 解决思路：弹性作业调度
 
@@ -374,6 +396,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 6. 引起业界关注 —— PaddlePaddle 的负责人徐伟老师邀请我加入
 7. 基于 PaddlePaddle 实现了容错 —— 开源给社区
 
+
 * 总体系统架构
 
 .image figures/unisound-arch.png 380 _
@@ -381,7 +404,9 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
 - 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
 
+
 * 第二首插曲：徐鹏老师的 GBR 框架
+
 
 * Google：多种框架解决不同问题
 
@@ -389,6 +414,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 没有学校里常用的 MPI —— 移植 MPICH 到 BorgMPI 没人用，因为不能容错。
 - 容错很重要：一个分布式作业里的进程，可能因为各种原因失败；不希望作业因此失败。
 - 基于 Borg，很容易开发各种分布式框架，方便编程。徐鹏老师的 GBR。
+
 
 * 开源行业：一个框架解决所有问题
 
@@ -399,14 +425,17 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 
 - YARN、Mesos、Kubernetes
 
+
 * 对第三个故事的反思
 
 - 基础架构工作通常不是一家公司可以做好的；开放式战略很重要
 - 竭尽全力，悍不畏死
 
+
 * 深度学习框架和容错
 
 - 留待下次分享
+
 
 * 感谢
 
