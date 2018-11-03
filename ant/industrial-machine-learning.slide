@@ -262,8 +262,8 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https
 
 不足之处：
 
-- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200“高频”topics。
-- 即使通过分布式计算，可以用很大量数据训练，可以得到很多topics，但是大都重复。
+- LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，只能学得~200“高频”topics。
+- 通过分布式计算，可以用大数据训练，得到很多topics，但是大都重复。
 - 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤”这样的小众语义。
 
 解决方法：
@@ -292,16 +292,50 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https
 .image figures/莫代尔.png
 
 
-* Peacock 系统介绍
+* Peacock 的设计思路
 
-Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]
+LDA 的 Dirichlet-multinomial distribution 分布让学习算法非常简单
 
-如何做到的：
+易于分布式计算：
 
-- LDA 假设 topics 的先验分布是 Dirichlet distribution。 Peacock 假设是 Dirichlet process -- 无穷多topics上的 Dirichlet distribution。
-- 基于 Dirichlet process 的模型，训练算法非常复杂，进程间通信的模式很复杂，一旦一个进程失败，整个作业无法错误恢复：Hierarchical Dirichlet Processes (HDP)。
-- 需要一个数学上的近似（approximation）算法。而分布式计算的工程技法使得数学上的近似成为可能：
-- Peacock 通过在分布式计算时使用 model parallelism 技法，支持学习很大的模型，topics 数量很多，从而用 Dirichlet distribution 的算法，来学习趋近 Dirichlet process 效果的模型
+- 2008、PLDA: Parallel latent Dirichlet allocation for large-scale applications
+- 2008、Distributed inference for latent Dirichlet allication
+- 2009、Parallel inference for latent Dirichlet allocation on GPUs
+- 2010、PLDA+: Parallel latent Dirichlet allocation with data placement and pipeline processing
+
+易于加速：
+
+- 2014、Reducing the sampling complexity of topic models
+- 2015、LightLDA: big topic models on modest computer clusters
+- 2016、WarpLDA: a cache-efficient O(1) algorithm for latent Dirichlet allocation
+
+
+* Peacock 的设计思路
+
+Dirichlet-multinomial 分布抑制长尾 topics 问题的发现和改进：
+
+- 2006、Pachinko Allocation: DAG-Structured Mixture Models of Topic Correlations
+- 2007、A Tutorial on Dirichlet Processes and Hierarchical Dirichlet Processes
+- 2009、Rethinking LDA: Why priors matter
+
+发现：
+
+- Dirichlet distribution prior => Dirichlet process prior 可以有效缓解抑制长尾的问题
+- 理论上 topic 数量 K → ∞；实际学习过程中，topics 会分裂或者合并
+- 大模型用一台机器存不下，新 topic 放在哪台机器上？
+- 因为通信模式复杂，所以分布式系统实现低效且不易容错。
+
+
+* Peacock 系统设计
+
+同时改进数学方法和系统工程
+
+近似算法：K=1,000,000 的 LDA 近似于 HDP
+⇒ 不分裂或合并 topics
+⇒ 容易实现模型并行，用很多机器协同存储一个大模型
+⇒ 大模型意味着可以支持很多 topics，K=1,000,000
+
+Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]]
 
 
 * 关于第二个故事的反思
