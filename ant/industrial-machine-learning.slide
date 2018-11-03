@@ -151,19 +151,6 @@ MapReduce 算法（过渡简化，以便划重点；详见论文）
 P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 
-* 关于第一个故事的反思
-
-建模长尾数据需要敢于 *离经叛道*：
-
-重新定义问题：frequent itemset mining ==> infrequent itemset mining
-
-探寻 revolutionary 的解法，而不是 evolutionary 的：
-
-- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
-- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
-- 关注大数据技术：Google MapReduce 和 GFS
-
-
 * 一首插曲：长尾数据和长尾分布
 
 
@@ -226,6 +213,19 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 - 指数族：P(x) = a eᵇˣ，log P(x) ≈ c x ： 如果 x 轴是 linear-sclae，P(x) 是 log-scale 则应该看到直线。
 
 
+* 关于第一个故事的反思
+
+建模长尾数据需要敢于 *离经叛道*：
+
+重新定义问题：frequent itemset mining ==> infrequent itemset mining
+
+探寻 revolutionary 的解法，而不是 evolutionary 的：
+
+- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
+- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
+- 关注大数据技术：Google MapReduce 和 GFS
+
+
 * 第二个故事：提升广告盈利能力
 
 
@@ -262,8 +262,8 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https
 
 不足之处：
 
-- 因为 LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，所以只能聚类得到200“高频”topics。
-- 即使通过分布式计算，可以用很大量数据训练，可以得到很多topics，但是大都重复。
+- LDA 假设 Dirichlet-multinomial 分布，忽略长尾数据，只能学得~200“高频”topics。
+- 通过分布式计算，可以用大数据训练，得到很多topics，但是大都重复。
 - 能理解“农业”、“历史”这样的“高频”语义，不能理解“红酒木瓜汤”这样的小众语义。
 
 解决方法：
@@ -292,16 +292,50 @@ pLDA: Parallel Latent Dirichlet Allocation for Large-scale Applications. [[https
 .image figures/莫代尔.png
 
 
-* Peacock 系统介绍
+* Peacock 的设计思路
 
-Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]
+LDA 的 Dirichlet-multinomial distribution 分布让学习算法非常简单
 
-如何做到的：
+易于分布式计算：
 
-- LDA 假设 topics 的先验分布是 Dirichlet distribution。 Peacock 假设是 Dirichlet process -- 无穷多topics上的 Dirichlet distribution。
-- 基于 Dirichlet process 的模型，训练算法非常复杂，进程间通信的模式很复杂，一旦一个进程失败，整个作业无法错误恢复：Hierarchical Dirichlet Processes (HDP)。
-- 需要一个数学上的近似（approximation）算法。而分布式计算的工程技法使得数学上的近似成为可能：
-- Peacock 通过在分布式计算时使用 model parallelism 技法，支持学习很大的模型，topics 数量很多，从而用 Dirichlet distribution 的算法，来学习趋近 Dirichlet process 效果的模型
+- 2008、PLDA: Parallel latent Dirichlet allocation for large-scale applications
+- 2008、Distributed inference for latent Dirichlet allication
+- 2009、Parallel inference for latent Dirichlet allocation on GPUs
+- 2010、PLDA+: Parallel latent Dirichlet allocation with data placement and pipeline processing
+
+易于加速：
+
+- 2014、Reducing the sampling complexity of topic models
+- 2015、LightLDA: big topic models on modest computer clusters
+- 2016、WarpLDA: a cache-efficient O(1) algorithm for latent Dirichlet allocation
+
+
+* Peacock 的设计思路
+
+Dirichlet-multinomial 分布抑制长尾 topics 问题的发现和改进：
+
+- 2006、Pachinko Allocation: DAG-Structured Mixture Models of Topic Correlations
+- 2007、A Tutorial on Dirichlet Processes and Hierarchical Dirichlet Processes
+- 2009、Rethinking LDA: Why priors matter
+
+发现：
+
+- Dirichlet distribution prior => Dirichlet process prior 可以有效缓解抑制长尾的问题
+- 理论上 topic 数量 K → ∞；实际学习过程中，topics 会分裂或者合并
+- 大模型用一台机器存不下，新 topic 放在哪台机器上？
+- 因为通信模式复杂，所以分布式系统实现低效且不易容错。
+
+
+* Peacock 系统设计
+
+同时改进数学方法和系统工程
+
+近似算法：K=1,000,000 的 LDA 近似于 HDP
+⇒ 不分裂或合并 topics
+⇒ 容易实现模型并行，用很多机器协同存储一个大模型
+⇒ 大模型意味着可以支持很多 topics，K=1,000,000
+
+Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https://arxiv.org/pdf/1405.4402.pdf][ACM Transactions on Intelligent Systems and Technology. 2015.]]
 
 
 * 关于第二个故事的反思
@@ -343,6 +377,8 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
 - 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
 
+但是，要进一步增加数据，提升效果时遇到了限制。
+
 
 * 高性能计算的低效率
 
@@ -351,7 +387,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 机群利用率低：4/32 = 12.5%
 - 团队工作效率低：等待实验结果，不能快速迭代
 
-适用于小团队，大家互相讨论，规划调度
+工业机器学习的目的是把业务做好。不希望为了优化某一类作业的效率，而损失总体效率；或者优化某一个团队的效率，损害了公司总体效率。必须继续改进。
 
 
 * 解决思路：弹性作业调度
@@ -370,18 +406,14 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 弹性调度系统：根据优先级调整作业的进程数量
 
 
-* PaddlePaddle Elastic Deep Learning (EDL)
+* 解决方法：需要一个分布式操作系统
 
-- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
+实例：云知声的云计算系统
 
-- 机群总体利用率 90%
+.image figures/unisound-arch.png 380 _
 
-.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
-
-
-* PaddlePaddle Elastic Deep Learning (EDL)
-
-.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
+- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
 
 
 * 研发历程
@@ -397,46 +429,78 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 7. 基于 PaddlePaddle 实现了容错 —— 开源给社区
 
 
-* 总体系统架构
+* PaddlePaddle Elastic Deep Learning (EDL)
 
-.image figures/unisound-arch.png 380 _
+- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
 
-- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
-- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
+- 机群总体利用率 90%
+
+.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
 
 
-* 第二首插曲：徐鹏老师的 GBR 框架
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+
+
+* 第二首插曲：徐鹏老师的 GBR 框架的故事
 
 
 * Google：多种框架解决不同问题
 
+毕业后第一份工作给我的震撼
+
 - 所有程序都是分布式的，没有单机程序。都跑在一个分布式操作系统 Borg 上。
 - 没有学校里常用的 MPI —— 移植 MPICH 到 BorgMPI 没人用，因为不能容错。
 - 容错很重要：一个分布式作业里的进程，可能因为各种原因失败；不希望作业因此失败。
-- 基于 Borg，很容易开发各种分布式框架，方便编程。徐鹏老师的 GBR。
+- 基于 Borg，很容易开发各种分布式框架，方便编程。
+- 徐鹏老师的 GBR —— 只做机器学习，只为 maximum entropy models。
+- 公司里数不胜数的分布式框架，发表论文的只有 MapRedcue 和 Pregel。
 
 
 * 开源行业：一个框架解决所有问题
 
-- 用 MapReduce 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
-- Spark 解决在线数据处理、机器学习、SQL。
+MapReduce ⇒ Hadoop MapReduce：
 
-各种分布式框架基于同一个分布式操作系统
+- 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
 
-- YARN、Mesos、Kubernetes
+Pregel ⇒ Spark
+
+- 在线数据处理
+- 机器学习
+- SQL
+
+因为好的分布式操作系统的开发很难：
+
+- YARN 和 Mesos 的故事
+- Kubernetes 和 YARN/Mesos 的区别
 
 
 * 对第三个故事的反思
 
-- 基础架构工作通常不是一家公司可以做好的；开放式战略很重要
-- 竭尽全力，悍不畏死
+最后，在工业界被公认的语音技术壁垒是 Google 建立的：
+
+- An analysis of incorporating an external language model into a sequence-to-sequence model,  [[https://arxiv.org/abs/1712.01996][arxiv.org]] Dec 2017
+
+原因：
+
+- 算力过人
+- 算力不是高性能计算，而是工业分布式计算
+
+策略：
+
+- 厚积薄发：Google 的基础架构积累历经14年
+- 后发制人：开放式战略，团结多家公司，效法Linux之于BSD、Android之于iOS、Wintel之于Macintosh的故事
 
 
 * 深度学习框架和容错
 
-- 留待下次分享
+- 第三个故事说了从 Kubernetes 向上到分布式计算框架
+- 其中深度学习框架如何实现容错，留待下次分享
 
 
 * 感谢
 
 - 邹立
+- 严伟
+- 娄寅
