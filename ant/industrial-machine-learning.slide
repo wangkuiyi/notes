@@ -406,7 +406,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 弹性调度系统：根据优先级调整作业的进程数量
 
 
-* 解决方法：一个分布式操作系统、多种分布式编程框架
+* 解决方法：需要一个分布式操作系统
 
 实例：云知声的云计算系统
 
