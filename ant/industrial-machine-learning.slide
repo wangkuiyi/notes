@@ -151,19 +151,6 @@ MapReduce 算法（过渡简化，以便划重点；详见论文）
 P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 
-* 关于第一个故事的反思
-
-建模长尾数据需要敢于 *离经叛道*：
-
-重新定义问题：frequent itemset mining ==> infrequent itemset mining
-
-探寻 revolutionary 的解法，而不是 evolutionary 的：
-
-- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
-- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
-- 关注大数据技术：Google MapReduce 和 GFS
-
-
 * 一首插曲：长尾数据和长尾分布
 
 
@@ -224,6 +211,19 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 - 长尾：c log x ≈ log P(x) ：如果 x 和 P(x) 轴都是 log-scale，则应该看到一条直线。
 - 指数族：P(x) = a eᵇˣ，log P(x) ≈ c x ： 如果 x 轴是 linear-sclae，P(x) 是 log-scale 则应该看到直线。
+
+
+* 关于第一个故事的反思
+
+建模长尾数据需要敢于 *离经叛道*：
+
+重新定义问题：frequent itemset mining ==> infrequent itemset mining
+
+探寻 revolutionary 的解法，而不是 evolutionary 的：
+
+- 数据挖掘领域的顶级学术会议上，改进 FP-tree 和 FP-growth 的论文数以百计。
+- 彻底抛弃 FP-tree 和 FP-growth 用很小空间描述高频数据的思路，利用 Google GFS 近乎无穷的存储空间设计外存数据结构。
+- 关注大数据技术：Google MapReduce 和 GFS
 
 
 * 第二个故事：提升广告盈利能力
