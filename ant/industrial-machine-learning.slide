@@ -377,6 +377,8 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
 - 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
 
+但是，要进一步增加数据，提升效果时遇到了限制。
+
 
 * 高性能计算的低效率
 
@@ -385,7 +387,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 机群利用率低：4/32 = 12.5%
 - 团队工作效率低：等待实验结果，不能快速迭代
 
-适用于小团队，大家互相讨论，规划调度
+工业机器学习的目的是把业务做好。不希望为了优化某一类作业的效率，而损失总体效率；或者优化某一个团队的效率，损害了公司总体效率。必须继续改进。
 
 
 * 解决思路：弹性作业调度
@@ -404,18 +406,14 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 弹性调度系统：根据优先级调整作业的进程数量
 
 
-* PaddlePaddle Elastic Deep Learning (EDL)
+* 解决方法：一个分布式操作系统、多种分布式编程框架
 
-- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
+实例：云知声的云计算系统
 
-- 机群总体利用率 90%
+.image figures/unisound-arch.png 380 _
 
-.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
-
-
-* PaddlePaddle Elastic Deep Learning (EDL)
-
-.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
+- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
 
 
 * 研发历程
@@ -431,46 +429,78 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 7. 基于 PaddlePaddle 实现了容错 —— 开源给社区
 
 
-* 总体系统架构
+* PaddlePaddle Elastic Deep Learning (EDL)
 
-.image figures/unisound-arch.png 380 _
+- https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning
 
-- 在一个分布式操作系统（Kubernetes+glusterfs）上运行各种分布式应用
-- 为了方便开发，不同类型的应用采用不同的分布式编程框架。MapReduce：离线数据处理；Storm：在线数据处理；TensorFlow/PaddlePaddle：机器学习
+- 机群总体利用率 90%
+
+.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
 
 
-* 第二首插曲：徐鹏老师的 GBR 框架
+* PaddlePaddle Elastic Deep Learning (EDL)
+
+.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+
+
+* 第二首插曲：徐鹏老师的 GBR 框架的故事
 
 
 * Google：多种框架解决不同问题
 
+毕业后第一份工作给我的震撼
+
 - 所有程序都是分布式的，没有单机程序。都跑在一个分布式操作系统 Borg 上。
 - 没有学校里常用的 MPI —— 移植 MPICH 到 BorgMPI 没人用，因为不能容错。
 - 容错很重要：一个分布式作业里的进程，可能因为各种原因失败；不希望作业因此失败。
-- 基于 Borg，很容易开发各种分布式框架，方便编程。徐鹏老师的 GBR。
+- 基于 Borg，很容易开发各种分布式框架，方便编程。
+- 徐鹏老师的 GBR —— 只做机器学习，只为 maximum entropy models。
+- 公司里数不胜数的分布式框架，发表论文的只有 MapRedcue 和 Pregel。
 
 
 * 开源行业：一个框架解决所有问题
 
-- 用 MapReduce 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
-- Spark 解决在线数据处理、机器学习、SQL。
+MapReduce ⇒ Hadoop MapReduce：
 
-各种分布式框架基于同一个分布式操作系统
+- 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
 
-- YARN、Mesos、Kubernetes
+Pregel ⇒ Spark
+
+- 在线数据处理
+- 机器学习
+- SQL
+
+因为好的分布式操作系统的开发很难：
+
+- YARN 和 Mesos 的故事
+- Kubernetes 和 YARN/Mesos 的区别
 
 
 * 对第三个故事的反思
 
-- 基础架构工作通常不是一家公司可以做好的；开放式战略很重要
-- 竭尽全力，悍不畏死
+最后，在工业界被公认的语音技术壁垒是 Google 建立的：
+
+- An analysis of incorporating an external language model into a sequence-to-sequence model,  [[https://arxiv.org/abs/1712.01996][arxiv.org]] Dec 2017
+
+原因：
+
+- 算力过人
+- 算力不是高性能计算，而是工业分布式计算
+
+策略：
+
+- 厚积薄发：Google 的基础架构积累历经14年
+- 后发制人：开放式战略，团结多家公司，效法Linux之于BSD、Android之于iOS、Wintel之于Macintosh的故事
 
 
 * 深度学习框架和容错
 
-- 留待下次分享
+- 第三个故事说了从 Kubernetes 向上到分布式计算框架
+- 其中深度学习框架如何实现容错，留待下次分享
 
 
 * 感谢
 
 - 邹立
+- 严伟
+- 娄寅
