@@ -1,0 +1,75 @@
+TensorFlow Feature Transform
+TensorFlow Estimator, Apache Beam, and Flink
+
+王益
+蚂蚁金服研究员
+yi.w@antfin.com
+
+* TensorFlow Transform
+
+- TensorFlow builds deep learning computation steps into a data structure [[https://www.tensorflow.org/api_docs/python/tf/Graph][`tf.Graph`]],
+- TensorFlow Transform (tf.Transform) builds data processing steps into `tf.Graph`.
+
+
+* Applications
+
+tf.Transform is for *full-pass* data processing, for example,
+
+- Normalize an input value by mean and standard deviation.
+
+- Convert strings to integers by generating a vocabulary over all input values.
+
+- Convert floats to integers by assigning them to buckets based on the observed data distribution.
+
+
+* Feature Columns
+
+`tf.feature_column` defines the mapping from data to *features*.
+
+- `tf.feature_column.numeric_column(`[[https://www.tensorflow.org/api_docs/python/tf/feature_column/numeric_column][normalizer_fn=...]]`)`
+
+- `tf.feature_column.categorical_column_with_vocabulary_file(`[[https://www.tensorflow.org/api_docs/python/tf/feature_column/categorical_column_with_vocabulary_list][vocabulary_file=...]]`)`
+
+- `tf.feature_column.bucketized_column(`[[https://www.tensorflow.org/api_docs/python/tf/feature_column/bucketized_column][boundaries=...]]`)`
+
+How comes normalizer_fn, vocabulary_file, and boundaries?
+
+
+* Run Locally and Distributedly
+
+tf.Transform generates tf.Graphs that call the Apache Beam API.
+
+Apache Beam programs can run locally, or distributedly on Google Dataflow, Apache Flink, etc.
+
+
+
+* Version Compatibility
+
+- [[https://www.tensorflow.org/tfx/transform/#compatible_versions][TensorFlow ⇒ tf.Transform]]
+
+- [[https://www.tensorflow.org/tfx/transform/#compatible_versions][tf.Transform ⇒ to Beam]]
+
+- [[https://beam.apache.org/documentation/runners/flink/#version-compatibility][Beam ⇒ Flink]]
+
+
+* Run tf.Transform Example Locally
+
+- git clone https://github.com/tensorflow/transform
+
+- docker run --rm -it -v $PWD:/work -w /work tensorflow/tensorflow:1.12.0 bash
+
+- pip install tensorflow_transform
+
+- python ./transform/examples/simple_example.py
+
+Need a recent version of TensorFlow.  The default version doesn't work with tf.Transform.
+
+
+* tf.Transform Programs Call Beam API
+
+.code tfx_example.py
+
+
+* Run Beam Programs on Flink Distributedly
+
+https://github.com/apache/flink/pull/7015
