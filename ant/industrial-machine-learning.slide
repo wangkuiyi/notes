@@ -200,6 +200,18 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 .image http://blog.newrelic.com/wp-content/uploads/right-skewed-long-tail-distribution.png 180 _
 
 
+* 失效的 80/20 法则
+
+80/20 法则（[[https://en.wikipedia.org/wiki/Pareto_principle][Pareto Principle]]）：80%的结果来自20%的原因
+
+- 是对符合Gaussian分布（一个典型的指数族分布）的数据的一个陈述。
+
+2006年一篇论文 [[https://pubsonline.informs.org/doi/10.1287/mnsc.1110.1371][Goodbye Pareto Principle, Hello Long Tail]]
+
+- “information technology in general and Internet markets in particular could substantially increase the collective share of hard-to-find products, thereby creating a longer tail in the distribution of sales.”
+
+- 互联网的出现，使得信息交流更流畅，销售数据从 Gaussina 分布式向长尾分布变化。
+
 * 分布检验
 
 统计长尾分布的 histogram；对其横纵坐标分别取 log，并绘图。
@@ -373,7 +385,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 - 计算设备：200台高性能工作站，装备 Titian X GPU
 - 网络通信：InfiniBand —— 最快的RDMA网络方案
 - 优化通信速度：定制 MPICH 的 AllReduce 操作，利用InfiniBand 和 DirectLink
-- 优化计算速度：定制化 TensorFlow：[[https://github.com/baidu-research/tensorflow-allreduce/][TensorFlow AllReduce]] 
+- 优化计算速度：定制化 TensorFlow：[[https://github.com/baidu-research/tensorflow-allreduce/][TensorFlow AllReduce]]
 - 效果：训练数据从3,000小时增加到20,000小时的过程中，precision recall不断提高
 - 影响力：入选 MIT Tech Review 2016 年度[[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][全球十大科技突破]]
 
@@ -462,7 +474,7 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 
 MapReduce ⇒ Hadoop MapReduce：
 
-- 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15 
+- 实现各种机器学习算法：[[https://papers.nips.cc/paper/3150-map-reduce-for-machine-learning-on-multicore.pdf][MapReduce for ML on multi-core]]. NIPS‘15
 
 Pregel ⇒ Spark
 
