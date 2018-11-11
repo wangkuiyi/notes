@@ -1,0 +1,12 @@
+message ProgramDesc {
+  repeated BlockDesc blocks = 1;
+  optional Version version = 2;
+}
+
+message BlockDesc {
+  required int32 idx = 1;
+  required int32 parent_idx = 2;
+  repeated VarDesc vars = 3;
+  repeated OpDesc ops = 4;
+  optional int32 forward_block_idx = 5 [ default = -1 ];
+}
