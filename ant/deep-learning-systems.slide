@@ -212,7 +212,7 @@ yi.w@antfin.com
 
 * PaddlePaddle Fluid 的编译器设计
 
-.image https://github.com/PaddlePaddle/Paddle/raw/2dc5c69ecc0d83e20101d2767a94f48e19a07ce0/doc/design/fluid-compiler.png _ 1000
+.image figures/fluid-compiler.png _ 1000
 
 
 * 思路四：图表示 + 执行之后推导后向计算过程
