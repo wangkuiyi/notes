@@ -1,0 +1,5 @@
+IfElseOp(d.gps_loc != None,
+         location_sensitive_hashing(d.gps_loc),
+         IfElseOp(d.ip != None,
+                  ip_to_location_map(d.ip),
+                  UNKOWN_LOCATION))
