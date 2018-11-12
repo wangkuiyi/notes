@@ -25,7 +25,7 @@ yi.w@antfin.com
 
 - PyTorch 学习 TensorFlow，引入 graph，用来表示一部分计算过程 —— PyTorch 1.0 中的 script mode。
 
-- Google Brain 去年底开发了 tangent，对深度学习计算过程的描述不同于 TensorFlow（graph）和 PyTorch（lambda chain），而是 Python 源码。反向计算的推导通过写一个 Python 编译器完成。tagent 演化成 TensorFlow AutoGraph。
+- Google Brain 去年底开发了 tangent，对深度学习计算过程的描述不同于 TensorFlow（graph）和 PyTorch（lambda chain），而是 Python 源码。后向计算的推导通过写一个 Python 编译器完成。tagent 演化成 TensorFlow AutoGraph。
 
 
 * 上文中的一些关键词
@@ -37,18 +37,18 @@ yi.w@antfin.com
 - 计算的表示
 - 正向计算
 - 推导
-- 反向计算
+- 后向计算
 
 这些都和深度学习系统的核心功能有关
 
 
 * 深度学习系统的核心功能
 
-[[https://arxiv.org/abs/1502.05767][autodiff]] 自动求导：
+[[https://arxiv.org/abs/1502.05767][autodiff]] 自动求导：用户描述前向计算，系统自动推到后向计算。
 
 - 用户懒，只想描述正向计算过程
-- 训练需要执行反向计算过程
-- 深度学习系统 从正向计算自动推导反向计算
+- 训练需要执行后向计算过程
+- 深度学习系统 从正向计算自动推导后向计算
 
 
 * 正向计算
@@ -59,11 +59,11 @@ yi.w@antfin.com
 
 
 
-* 反向计算
+* 后向计算
 
 - 训练（training）：根据训练数据，估计参数
 - 参数（parameters）：神经网络的每一个计算单元（层、operator）都可能有参数
-- 反向计算：得到 ΔW = ∂c/∂W
+- 后向计算：得到 ΔW = ∂c/∂W
 - 优化（optimization）：更新参数 W += λ ΔW
 
 
@@ -95,7 +95,7 @@ yi.w@antfin.com
 * TensorFlow 的设计思路
 
 - 计算过程表达成一个 graph-of-operators
-- 反向计算的推导：给定表示正向计算的图，添加表示反向计算的部分
+- 后向计算的推导：给定表示正向计算的图，添加表示后向计算的部分
 - 先构造 graph 再执行 graph
 - 推导反向图的时候，尚未执行前向图，有些信息尚未知
 
@@ -128,10 +128,10 @@ yi.w@antfin.com
 - IfElseOp 位于上层图中，且有两个子图表示左右分支
 - WhileLoopOp 位于上层图中，有一个子图表示 loop step
 
-推导反向计算
+推导后向计算
 
 - 推导的时候前向计算图尚未被执行，所以 autodiff 要考虑可能执行左/右分支、和任意轮迭代。
-- 如果前向计算里嵌套 if/while，TensorFlow 至今不能正确推导反向计算：三年前报的[[https://github.com/tensorflow/tensorflow/issues/593][bug]]，一度以为已经解决了。
+- 如果前向计算里嵌套 if/while，TensorFlow 至今不能正确推导后向计算：三年前报的[[https://github.com/tensorflow/tensorflow/issues/593][bug]]，一度以为已经解决了。
 
 
 * TensorFlow 辅助工具
@@ -175,7 +175,7 @@ yi.w@antfin.com
 * Tape：动态度的另一种实现方式
 
 - 执行前向计算的时候，log 每个被执行了的 operator
-- 反向计算是 trace log。
+- 后向计算是 trace log。
 
 类似思路的系统：TensorFlow Eager Exeuction、PaddlePaddle Tape
 
@@ -204,7 +204,7 @@ yi.w@antfin.com
 
 * PaddlePaddle Fluid
 
-- 不用 Python 语言描述前向反向计算，用 protobuf 定义了一种 intermediate language（IL）
+- 不用 Python 语言描述前向后向计算，用 protobuf 定义了一种 intermediate language（IL）
 - 可以有各种语言的binding，来构造 IL 程序
 
 .code fluid.proto
@@ -215,7 +215,7 @@ yi.w@antfin.com
 .image https://github.com/PaddlePaddle/Paddle/raw/2dc5c69ecc0d83e20101d2767a94f48e19a07ce0/doc/design/fluid-compiler.png _ 1000
 
 
-* 思路四：图表示 + 执行之后推导反向计算过程
+* 思路四：图表示 + 执行之后推导后向计算过程
 
 
 * 一种老派思路
@@ -238,7 +238,7 @@ yi.w@antfin.com
 
 * 思路一：TensorFlow、Caffe2、MxNet
 
-- 执行图之前做 autodiff 来补全反向计算过程
+- 执行图之前做 autodiff 来补全后向计算过程
 - 诞生了“图优化”这种性能优化方法，被后世（？）借鉴
 - 编程方式反直觉；难以调试
 - 至今不支持前向计算中包括嵌套 if-else、for 的情况下 autodiff
