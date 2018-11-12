@@ -5,59 +5,82 @@
 yi.w@antfin.com
 
 
-* 深度学习的演进方兴未艾
+* 深度学习技术的演进
+
+
+* 新方法、新应用、新系统
 
 .image figures/dl-gens.png 550 _
 
 
-* 深度学习系统的演进方兴未艾
+* 应用、模型、系统的关系
 
-- 深度学习系统 是为了方便地描述 深度学习方法
-- 深度学习方法的演进 推动 深度学习系统的演进
-- 深度学习方兴未艾，深度学习系统的发展也在快速推进
+- 应用问题的解决 需要 新的深度学习方法
+- 新的深度学习方法 需要 深度学习系统来描述
 
-
-* 最近一年里的一些大幅变化
-
-- PyTorch 发布后，虽然它的运行速度慢，但是好用，迅速蚕食 TensorFlow 的份额。
-
-- TensorFlow 学习 PyTorch 革命掉自己的 graph mode，去年推出 Eager Execution。预计今年底发布的 TensorFlow 2.0 将把 eager mode 设置为默认模式。使用方式接近 PyTorch。
-
-- PyTorch 学习 TensorFlow，引入 graph，用来表示一部分计算过程 —— PyTorch 1.0 中的 script mode。
-
-- Google Brain 去年底开发了 tangent，对深度学习计算过程的描述不同于 TensorFlow（graph）和 PyTorch（lambda chain），而是 Python 源码。后向计算的推导通过写一个 Python 编译器完成。tagent 演化成 TensorFlow AutoGraph。
+深度学习方兴未艾，深度学习系统的发展也在快速推进
 
 
-* 上文中的一些关键词
+* 一些新发展和启示：效率的定义
+
+PyTorch 发布后，虽然它的运行速度 *慢*，但是 *好用*，迅速蚕食 TensorFlow 的份额。NIPS 超过一半的深度学习论文是用 PyTorch 而不是 TensorFlow 写的。
+
+- 人员工资比机器维护费用高。
+- PyTorch 提升开发效率，所以比 TensorFlow 更经济。
+
+
+* 一些新发展和启示：覆盖业界需求
+
+TensorFlow 社区推出 Estimator 沉淀模型；推出 TFX，覆盖数据的收集、管理、修订、特征工程。PyTorch 社区推出 FastAI。
+
+- 沉淀学界和工业界的工作以便复用。
+- 覆盖业界需要的数据流全流程，而不再局限于假设数据已经处理好了。
+
+
+* 一些新发展和启示：生态和演化
+
+TensorFlow 学习 PyTorch 革命掉自己的 graph mode，去年推出 Eager Execution。预计今年底发布的 TensorFlow 2.0 将把 eager mode 设置为默认模式。使用方式接近 PyTorch。
+
+PyTorch 学习 TensorFlow，引入 graph，用来表示一部分计算过程 —— PyTorch 1.0 中的 script mode。
+
+- 两个生态系统会持续并存
+- 两个生态在互相学习
+- 如果深度学习系统不能演化成生态，很快就退出舞台
+
+
+* 一些关键词
 
 - 运行速度
 - 好用
 - graph mode
 - eager mode
 - 计算的表示
-- 正向计算
+- 前向计算
 - 推导
 - 后向计算
 
 这些都和深度学习系统的核心功能有关
 
 
-* 深度学习系统的核心功能
+* 深度学习系统的核心功能：autodiff
+
+
+* 什么是 autodiff
 
 [[https://arxiv.org/abs/1502.05767][autodiff]] 自动求导：用户描述前向计算，系统自动推到后向计算。
 
-- 用户懒，只想描述正向计算过程
+- 用户懒，只想描述前向计算过程
 - 训练需要执行后向计算过程
-- 深度学习系统 从正向计算自动推导后向计算
+- 深度学习系统 从前向计算自动推导后向计算
 
 
-* 正向计算
+* autodiff：前向计算
 
 - 神经元网络：给定输入，通过网络，计算输出
 - 预测（prediction）
 
 
-* 后向计算
+* autodiff：后向计算
 
 - 训练（training）：根据训练数据，估计参数
 - 参数（parameters）：神经网络的每一个计算单元（层、operator）都可能有参数
@@ -67,37 +90,39 @@ yi.w@antfin.com
 （注：这里用最简单的SGD优化算法为例。更复杂的优化算法里 λ 是个函数）
 
 
-* autodiff 过程：TensorFlow
+* autodiff 的四种设计思路
+
+.image figures/toolspace.png
+
+
+* 思路一：TensorFlow
+
+
+* 前向计算
 
 .image figures/graph_construction_example_forward_only.png
 
-* autodiff 过程：TensorFlow
+* 反向计算
 
 .image figures/graph_construction_example_forward_backward.png
 
-* autodiff 过程：TensorFlow
+* 更新模型
 
 .image figures/graph_construction_example_all.png
 
 
 * 计算过程的表示和推导
 
-- 上文中用“图”表示计算过程是 TensorFlow 的发明；比图更直接的表达 —— 程序
-
-四种设计思路
-
-.image figures/toolspace.png
+- 上文中用“图”表示计算过程是 TensorFlow 的发明
+- 比图更直接的表达 —— 程序
 
 
-* 设计思路一：TensorFlow
-
-
-* TensorFlow 的设计思路
+* 基于图的 autodiff
 
 - 计算过程表达成一个 graph-of-operators
-- 后向计算的推导：给定表示正向计算的图，添加表示后向计算的部分
+- 后向计算的推导：给定表示前向计算的图，添加表示后向计算的部分
 - 先构造 graph 再执行 graph
-- 推导反向图的时候，尚未执行前向图，有些信息尚未知
+- 推导后向图的时候，尚未执行前向图，有些信息尚未知
 
 类似思路的其他系统：Caffe2、MxNet
 
@@ -120,18 +145,32 @@ yi.w@antfin.com
 - 很难实现控制流（if-else、while）
 
 
-* 静态图
+* 控制流：需求
 
-- 每个训练迭代执行同一个图（静态）
-- 计算中往往需要包括控制流（动态）
-- 让图能表示控制流：引入 IfElseOp，WhileLoopOp
+Fraud Detection：需要交易发生的地点。
+
+- 如果用户在手机上设置允许支付宝app获得地点信息，则有GPS的定位。
+- 否则；如果用户允许使用 IP 信息，则通过 IP->地址映射表推测地址。
+- 否则；地址设置成“未知”
+
+
+* 控制流：解法
+
+TensorFlow、MxNet、Caffe2、PaddlePaddle 都有表示控制流的 operators：IfElseOp 和 WhileLoopOp
+
 - IfElseOp 位于上层图中，且有两个子图表示左右分支
 - WhileLoopOp 位于上层图中，有一个子图表示 loop step
 
-推导后向计算
+.code feature-extract-example.txt
 
-- 推导的时候前向计算图尚未被执行，所以 autodiff 要考虑可能执行左/右分支、和任意轮迭代。
-- 如果前向计算里嵌套 if/while，TensorFlow 至今不能正确推导后向计算：三年前报的[[https://github.com/tensorflow/tensorflow/issues/593][bug]]，一度以为已经解决了。
+
+* 控制流：问题
+
+TensorFlow 至今不能正确推导上述前向计算的反向计算
+
+- 推导的时候前向计算图尚未被执行，所以 autodiff 要考虑可能执行左/右分支、和任意轮迭代
+- 如果前向计算里嵌套 if/while，TensorFlow 至今不能正确推导后向计算
+- 从2015年努力到2018年仍未解决 https://github.com/tensorflow/tensorflow/issues/593
 
 
 * TensorFlow 辅助工具
@@ -144,7 +183,7 @@ yi.w@antfin.com
 
 能否不要发明这些问题呢？
 
-- 放弃graph mode，转向学习 PyTorch。TensorFlow 2.0 Eager Mode。
+- 放弃graph，用“程序”来表示计算过程
 
 
 * 设计思路二：PyTorch
@@ -180,13 +219,13 @@ yi.w@antfin.com
 类似思路的系统：TensorFlow Eager Exeuction、PaddlePaddle Tape
 
 
-* 思路三：用程序表示计算过程
+* 思路三：深度学习语言和编译器
 
 
 * 程序表示
 
-- 图表示：执行前向计算之前，推导反向过程
-- chain/tape：记录前向计算的执行过程，以便推导反向过程
+- 图表示：执行前向计算之前，推导后向过程
+- chain/tape：记录前向计算的执行过程，以便推导后向过程
 - 程序表示：类似图表示
 
 类似思路的系统：Google Tangnet、PaddlePaddle Fluid
@@ -221,12 +260,15 @@ yi.w@antfin.com
 * 一种老派思路
 
 - 出现于 Torch 2002
-- 影响了 TensorFlow 基于图的设计
+- TensorFlow 学习了 Torch 的图表示
+- 因为执行之后才 autodiff，所以其实是不需要图的，PyTorch 放弃了图
 
 
 * 图优化技术
 
-拓扑上的优化
+为了提升 Google Cloud 在 AI 时代的市场份额，Google 巨资推动 TensorFlow 的社区影响
+
+很多公司跟进了这个思路，我们也应该利用现有的图优化解决方案：
 
 - TensorFlow Grappler
 - NNVM
@@ -236,36 +278,12 @@ yi.w@antfin.com
 * 四种思路的总结
 
 
-* 思路一：TensorFlow、Caffe2、MxNet
+* 回顾和对比
 
-- 执行图之前做 autodiff 来补全后向计算过程
-- 诞生了“图优化”这种性能优化方法，被后世（？）借鉴
-- 编程方式反直觉；难以调试
-- 至今不支持前向计算中包括嵌套 if-else、for 的情况下 autodiff
-- 因缘际会，被广泛接受；在自我革新转向第二种思路
+.image figures/autodiff-comparison.png 450 _
 
 
-* 思路二：PyTorch、Chainer、DyNet、PaddlePadde Tape
-
-- 执行执行前向计算之后做 autodiff
-- 编程方式自然；被广泛接受
-- 前向和后向计算中部分过程可以描述成图，并通过图优化提升性能
-
-
-* 思路三：Tangent、TensorFlow AutoGraph、PaddlePaddle Fluid
-
-- 执行之前就做 autodiff —— 同思路一
-- 计算过程表示为程序，而不是图 —— 同思路二
-- 编程方式自然
-- 通过编译技术而不是图优化提升性能 —— Google的新一代DL优化技术、NNVM2
-
-
-* 思路四：图表示 + 执行之后推导后向计算过程
-
-- 利用图优化提升计算效率
-
-
-* 我能自己开发一个深度学习系统吗？
+* 开发一个深度学习系统的代价
 
 
 * PaddlePaddle Fluid
