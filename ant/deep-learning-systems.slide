@@ -258,3 +258,37 @@ yi.w@antfin.com
 - 计算过程表示为程序，而不是图 —— 同思路二
 - 编程方式自然
 - 通过编译技术而不是图优化提升性能 —— Google的新一代DL优化技术、NNVM2
+
+
+* 思路四：图表示 + 执行之后推导后向计算过程
+
+- 利用图优化提升计算效率
+
+
+* 我能自己开发一个深度学习系统吗？
+
+
+* PaddlePaddle Fluid
+
+一个人，两周
+
+.image figures/tape-dev.png 500 _
+
+
+* Google Tangent
+
+两个人，一个月
+
+.image figures/tangent-dev.png 500 _
+
+
+* 那么为什么 TensorFlow 和 PyTorch 要那么多人？
+
+- 深度学习系统只是深度学习生态中的一层
+- 很多人在生态系统的不同层级上工作
+- 目前 TensorFlow 和 PyTorch 两个生态都有层需要扩展甚至替换
+
+
+* 蚂蚁在各层可以做的工作
+
+.image figures/ecosystem.png 500 _
