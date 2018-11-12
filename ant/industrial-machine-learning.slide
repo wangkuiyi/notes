@@ -6,7 +6,7 @@ Stories about Industrial Machine Learning
 yi.w@antfin.com
 
 
-* 故事
+* 故事：从产品角度讲
 
 - 第一个故事：提升搜索产品体验
 - 第二个故事：优化广告盈利能力
@@ -126,7 +126,7 @@ FP-growth 把输入表示成一个内存数据结构 FP-tree，方便数数。
 
 数据大了，FP-tree 也大，内存装不下，所以很多分布式实现把 FP-tree 分布到多台机器 —— 数数算法复杂。
 
-.image https://images.slideplayer.com/24/7538950/slides/slide_27.jpg 350 _
+.image figures/fp-tree.png 350 _
 
 
 * 工业规模：PFP for Infrequent Itemset Mining
@@ -172,7 +172,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 如果我们把一个国家的人按照收入排序，列出每个人的收入，会得到下图中哪条曲线呢？
 
-.image https://www.statisticshowto.datasciencecentral.com/wp-content/uploads/2016/05/heavy-tailed-300x178.png 200 _
+.image figures/heavy-tailed-300x178.png 200 _
 
 极少数人很有钱；绝大部分人也能维持收入（否则人口骤减，横坐标也就不用这么长了）
 
@@ -182,7 +182,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 上述数据的机器学习模型应该选择哪一个呢？
 高斯分布（Gaussian/normal distribution）还是柯西分布（Cauchy distribution）？
 
-.image https://i.stack.imgur.com/yosEo.png 200 _
+.image figures/cauchy-gaussian.png 200 _
 
 - 都是草帽形状，估计出来的均值都一样，但是方差不同
 - 高斯说：绝大部分人都完全没有收入，没有还贷能力，不值得向他们发放贷款
@@ -193,11 +193,11 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 
 来自一家风投的一篇[[https://blog.usejournal.com/power-laws-in-venture-capital-why-the-long-tail-matters-22e057c6fa34][策略分析]]里用了下图：
 
-.image https://cdn-images-1.medium.com/max/1200/1*_jLijWQU1YM9DbPV2YHyEg.png 180 _
+.image figures/wrong-concept.jpeg 180 _
 
 黄色图是数据。红色图是分布。两者的坐标意思都不一样，没法放在一个图里。黄色数据的分布是“截断的Cauchy”：
 
-.image http://blog.newrelic.com/wp-content/uploads/right-skewed-long-tail-distribution.png 180 _
+.image figures/right-skewed-long-tail-distribution.png 180 _
 
 
 * 失效的 80/20 法则
@@ -217,7 +217,7 @@ P(尿布|啤酒) = P(啤酒、尿布) / P(啤酒) = 1/2
 统计长尾分布的 histogram；对其横纵坐标分别取 log，并绘图。
 长尾分布的histogram如下：
 
-.image https://i.stack.imgur.com/PBdEU.png 250 _
+.image figures/log-log-long-tail.png 250 _
 
 这是因为二者的函数形式：
 
@@ -447,12 +447,12 @@ Peacock: Learning Long-Tail Topic Features for Industrial Applications. [[https:
 
 - 机群总体利用率 90%
 
-.image https://1.bp.blogspot.com/-sp_sVZvhMbU/WiYgXMLQKuI/AAAAAAAAAIM/uc_3iT9BZmAtQGiGGSErgueHK71uWMBCACEwYBhgL/s640/figure-1.png
+.image figures/edl-91-percent.png
 
 
 * PaddlePaddle Elastic Deep Learning (EDL)
 
-.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 550
+.image figures/edl-two-jobs.png _ 550
 
 
 * 第二首插曲：徐鹏老师的 GBR 框架的故事
