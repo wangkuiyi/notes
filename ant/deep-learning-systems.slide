@@ -57,14 +57,14 @@ yi.w@antfin.com
 - 预测（prediction）
 
 
-
-
 * 后向计算
 
 - 训练（training）：根据训练数据，估计参数
 - 参数（parameters）：神经网络的每一个计算单元（层、operator）都可能有参数
 - 后向计算：得到 ΔW = ∂c/∂W
 - 优化（optimization）：更新参数 W += λ ΔW
+
+（注：这里用最简单的SGD优化算法为例。更复杂的优化算法里 λ 是个函数）
 
 
 * autodiff 过程：TensorFlow
@@ -221,7 +221,7 @@ yi.w@antfin.com
 * 一种老派思路
 
 - 出现于 Torch 2002
-- 便于结合最近的图优化技术
+- 影响了 TensorFlow 基于图的设计
 
 
 * 图优化技术
