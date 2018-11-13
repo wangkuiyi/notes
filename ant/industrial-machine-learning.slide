@@ -26,7 +26,7 @@ yi.w@antfin.com
 
 - 传统数据挖掘方法：PFP
 - 统计学习：pLDA、Peacock
-- 深度学习：DeepSpeech 2、PaddlePaddle、AI Cloud
+- 深度学习：DeepSpeech 2、PaddlePaddle、Sextant
 
 
 * 故事覆盖的计算基础架构
@@ -35,7 +35,7 @@ yi.w@antfin.com
 - pLDA：MapReduce、MPI、Pregel
 - Peacock：专门开发的独特的分布式计算框架
 - DeepSpeech 2：Majel（MPI+RDMA+GPU DirectLink）
-- AI Cloud：TensorFlow + Kubernetes
+- Sextant：TensorFlow + Kubernetes
 - PaddlePaddle：自己是框架，可以运行在 Kubernetes 和 MPI 上
 
 
