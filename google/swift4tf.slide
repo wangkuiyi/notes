@@ -1,0 +1,58 @@
+Look foward to Swift for TensorFlow
+
+Yi Wang
+Principal Engineer
+Ant Financial
+yi.w@antfin.com
+
+
+* Overview
+
+Paddle: A trial of deep learning compiler
+
+- history, adoptation, and business impact
+
+Outlook: Why we need deep learning compilers
+
+- Inference and training are Inseparable
+- Imitation learning and autonomous driving
+- Distributed training and elastic scheduling
+- Federated learning
+
+Lessons: Adopt deep learning compilers in tech giants
+
+
+* The Presenter
+
+- 2007 ~ 2010: Google China. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][PFP]]
+- 2010 ~ 2014: Tencent. Engineering Director of Advertising. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
+- 2014: LinkedIn. Senior Staff Data Scientist.
+- 2015: Scaled Inference. Head of Research.
+- 2016 ~ 2018: Baidu Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][Paddle]]
+- 2018 ~ present: Ant Financial.  Principal Engineer.
+
+
+* Paddle: The History
+
+- 2012: Wei Xu wrote the initial version; graph-based, supports RNN.
+- 2013: The CEO's Award due to contributions to Baidu products.
+- 2016: Open sourced.  I led the technology upgrading.
+- 2017: Released Paddle Fluid, the deep learning compiler.
+- 2018: 90% Baidu products turned to use Fluid, including Web search and online advertising.
+
+
+* Paddle: The Community
+
+.image community.png _ 900
+
+Left: when graph-based Paddle was opened sourced. Right: half-year after the release of Paddle Fluid.
+
+
+* Paddle: A Compiler
+
+
+* 故事：从产品角度讲
+
+- 第一个故事：提升搜索产品体验
+- 第二个故事：优化广告盈利能力
+- 第三个故事：建立语音技术壁垒
