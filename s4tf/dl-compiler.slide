@@ -24,12 +24,15 @@ Discusions: Want to learn from you!
 
 * The Presenter
 
-- 2007 ~ 2010: Google China. Researcher. [[https://pdfs.semanticscholar.org/376f/fb536c3dc5675e9ab875b10b9c4a1437da5d.pdf][pLDA]], [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34668.pdf][PFP]]
-- 2010 ~ 2014: Tencent. Engineering Director of Advertising. [[https://dl.acm.org/citation.cfm?id=2700497][Peacock]]
+- 2007 ~ 2010: Google China. Researcher.
+- 2010 ~ 2014: Tencent. Engineering Director of Advertising. 
 - 2014: LinkedIn. Senior Staff Data Scientist.
 - 2015: Scaled Inference. Head of Research.
-- 2016 ~ 2018: Baidu Silicon Valley Research. Principal Engineer. [[https://www.technologyreview.com/s/544651/baidus-deep-learning-system-rivals-people-at-speech-recognition/][DeepSpeech 2]], [[https://www.unisound.com/news/news16-8.html][Sextant]], [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][Paddle]]
+- 2016 ~ 2018: Baidu Silicon Valley Research. Principal Engineer.
 - 2018 ~ present: Ant Financial.  Principal Engineer.
+
+.image deepnav-small.png _ 500
+
 
 
 * Paddle: The History
@@ -111,8 +114,8 @@ Take [[https://github.com/PaddlePaddle/Paddle/issues/3119][IfElse]] as an exampl
 - Search/ads/recommendation are the money printers of the Internet industry.
 - Users' short-term interests lead to most clicks.
 - To capture the short-term interests, we want online learning of ranking models.
-
-- We want for search/ads/recommendation are commonly 
+- The training data is the session log stream.  The inference input is online queries.
+- Good to make the modeling system a RPC server, which provides online learning calls and online inference calls.
 
 
 
