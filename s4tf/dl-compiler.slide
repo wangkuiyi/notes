@@ -1,4 +1,5 @@
-Look foward to Swift for TensorFlow
+Lessons from Paddle
+A Trial Towards Deep Learning Compiler and Its Deployments
 
 Yi Wang
 Principal Engineer
@@ -8,18 +9,11 @@ yi.w@antfin.com
 
 * Overview
 
-Paddle: Towards deep learning compiler
+- Paddle: towards deep learning compiler
 
-- history, adoptation, and business impact
+- Lessons: what we learned from developing and deploying Paddle
 
-Outlook: Why we need deep learning compilers
-
-- Inference and training are Inseparable
-- Imitation learning and autonomous driving
-- Distributed training and elastic scheduling
-- Federated learning
-
-Discusions: Want to learn from you!
+- Discussions: what we want to learn from you
 
 
 * The Presenter
@@ -31,109 +25,287 @@ Discusions: Want to learn from you!
 - 2016 ~ 2018: Baidu Silicon Valley Research. Principal Engineer.
 - 2018 ~ present: Ant Financial.  Principal Engineer.
 
-.image deepnav-small.png _ 500
+.image deeepnav-small.png _ 500
+
+
+
+* Paddle: A Brief Introduction
+
+
+
+* Paddle: Overview
+
+- A brief history and business impact
+- The open source community
+- The IR, VM, and transpilers
 
 
 
 * Paddle: The History
 
-- 2012: Wei Xu wrote the initial version; graph-based, supports RNN.
-- 2013: The CEO's Award due to contributions to Baidu products.
+- 2012: Wei Xu wrote the graph-based version: supports RNN, complements Caffe.
+- 2013: The CEO's Award due to adoptions by Baidu products.
 - 2016: Open sourced.  I led the technology upgrading.
 - 2017: Released Paddle Fluid, the deep learning VM/compiler.
 - 2018: 90% Baidu products turned to use Fluid, including Web search and online advertising.
+
 
 
 * Paddle: The Community
 
 .image community.png _ 900
 
-Left: when graph-based Paddle was opened sourced. Right: half-year after the release of Paddle Fluid.
+Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fluid.
+
 
 
 * Paddle: Towards a Compiler
 
-- IR as protobuf messages: https://github.com/PaddlePaddle/Paddle/pull/3322
-- The IR design: https://github.com/PaddlePaddle/Paddle/pull/4241
-- The compiler design: https://github.com/PaddlePaddle/Paddle/pull/7178
-- The CSP design: https://github.com/PaddlePaddle/Paddle/pull/6394
+- IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]
+- [[https://github.com/PaddlePaddle/Paddle/pull/7178][VM]]
+- Backend as transpilers
+- Scope hierarchy
+- Frontend - `with` `fluid.IfElse(cond).true_branch():`
+- Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
 
 
-* Paddle: Intermediate Representation
-
-- Has *block*, function *signature*, function *call*, and [[https://github.com/PaddlePaddle/Paddle/pull/4241][*program*]].
-- Need [[https://github.com/PaddlePaddle/Paddle/issues/10244][user-defined functions]].
-
-.image ir.png _ 700
-
-
-* Paddle: The VM
-
-The [[https://github.com/PaddlePaddle/Paddle/pull/4537][executor]] works like an VM, which runs a `Program` protobuf message.
-
-.image interpreter.png _ 800
-
-
-* Paddle: Compiler Backends as Transpilers
-
-- For example, the [[https://github.com/wangkuiyi/Paddle/blob/8909708c1a91d580ed3c8cb12d1cab61338eac39/doc/design/fluid_compiler.md][CUDA backend]] converts `Program` messages into `.cu` files.
-
-.image compiler.png _ 700
-
-
-* Paddle: Scope Hiearchy
-
-The compiler/VM needs to track variable values for the backward pass, thus cannot pop stack frames. This generalizes the stack into a forest, or a [[https://github.com/PaddlePaddle/Paddle/pull/3116][scope hiearchy]].
-
-.image scope.png _ 800
-
-
-* Paddle: Transpilers
-
-- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/distribute_transpiler.py][distributed-training transpiler]] converts a `Program` message into a trainer program and a parameter server program.
-
-- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/inference_transpiler.py][training-to-inference transpiler]] extracts a single iteration of inference code out from a training `Program`, so other transpilers can generate TensorFlow/Caffe graphs.
-
-- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/memory_optimization_transpiler.py][early-free memory transpiler]] detects tensors that can be freed early and inserts `FreeTensorOperators` into the right locations of the program.
-
-The [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]] -- make each program do one thing well.
-
-
-* Paddle: The Frontend Language
-
-We are too lazy to re-implement the compiler frontend for a programming language; so we slightly customize Python to generate the `Program` protobuf message.
-
-Take [[https://github.com/PaddlePaddle/Paddle/issues/3119][IfElse]] as an example:
-
-.image ifelse.png _ 700
+TensorFlow builds model/data parallelism into the system.
+Paddle Fluid builds mode/data parallelism using the system.
 
 
 
-* Outlook: Inference and Training are Inseparable
+* Lessons
 
-- Search/ads/recommendation are the money printers of the Internet industry.
-- Users' short-term interests lead to most clicks.
-- To capture the short-term interests, we want online learning of ranking models.
-- The training data is the session log stream.  The inference input is online queries.
-- Good to make the modeling system a RPC server, which provides online learning calls and online inference calls.
-
+- Model parallelism
+- Distributed computing and elastic scheduling
+- Inference and training are inseparable
+- Autonomous driving
 
 
-* Outlook: Inference and Training are Inseparable
 
-A model/application perspective:
+* Lesson 1: Model Parallelism
+
+
+
+* Model Parallelism: Big Models
+
+Paddle's solution to model parallelism differs from TensorFlow's.
+
+Motivations:
+
+- Online advertising needs terabytes big embedding layers.
+- Short video classification needs NCE layers for millions of classes.
+
+
+
+
+
+* Model Parallelism: TensorFlow
+
+TensorFlow
+
+- partitions the graph by the device property on nodes/edges at runtime, allowing
+- `tf.device()` to assign operators to devices and
+- `tf.create_partitioned_variables()` at programming time.
+
+Our concerns:
+
+- Rarely we see a programming language assigns instruction/function to a CPU core at programming time or compiling time.
+- It is usually the programmers' work, instead of the programming languages' work, to partition big variables.
+- We might have an insufficient number of GPUs for the many partitions.
+
+
+
+* Model Parallelism: Paddle
+
+From the perspective of programming languages:
+
+- Operators are built-in functions.
+- Put big variables on `memcached`, which considers partitioning at runtime.
+- Create `DistributedEmbeddingLayer` and `DistributedNCELayer` that access `memcached`.
+- We could provide primitives to access `memcached` and write `DistributedEmbeddingLayer` and `DistributedNCELayer` in Python (as user-defined functions) other than in C++ (as built-in functions).
+
+`memcached` might not be a perfect choice; the point is to leave the choice to programmers.
+
+
+
+* Lesson 2: Distributed Learning
+
+
+
+* Distributed Learning: User requirements
+
+- convergence
+- efficiency
+
+where efficiency include
+
+- from job start to completion
+- from job submission to start -- less addressed but a strong requirement
+
+
+* Distributed Learning: Elastic Scheduling
+
+Without elastic scheduling:
+
+- Suppose that a user submits a job requiring 10 GPUs, but the cluster has only 5 idle ones.  The job has to want.
+
+With elastic scheduling:
+
+- Kubernetes starts the job with 5 processes that use the 5 GPUs.  When other jobs complete and free GPUs, increase the number of processes.
+
+- If high-priority jobs come in, Kubernetes might kill some processes of our job to free resource.
+
+Elastic scheduling = fault tolerance
+
+
+
+* Distributed Learning: Synchronous SGD
+
+
+- Trainer processes do collaborative model update using [[https://pytorch.org/docs/stable/distributed.html][torch.distribution.all_reduce]]
+- No need for parameter servers.
+- Each model update depends on gradients from all trainers.
+- Optimize `all_reduce` using HPC techniques (RDMA and NVIDIA GPUDirect).
+- Not fault tolerable.
+
+
+
+* Distributed Learning: Partial Synchronous SGD
+
+- [[https://arxiv.org/abs/1604.00981][partial synchronous SGD]]: the parameter server waits for gradients from M out of N trainers before updating the model.
+- Better fault tolerance.
+
+
+
+* Distributed Learning: Asynchronous SGD and Paddle EDL
+
+- Fully fault-tolerable and supports [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][elastic scheduling]]. Cluster utilization [[https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/][~90%]].
+
+.image https://4.bp.blogspot.com/-gOMFfnaygSU/WiYgXO_KJ0I/AAAAAAAAAII/lMLjTGNGYhsovwKornCzMZBhEdMdPI5HACLcBGAs/s640/figure-2.png _ 500
+
+
+
+* Distributed Learning: Federated Learning
+
+
+- Google's [[https://ai.googleblog.com/2017/04/federated-learning-collaborative.html][federated learning project]] on input methods.
+
+- Ant's demand for federated learning is because of user privacy and data security.
+
+- Autonomous driving's demand is due to an unstable network connection and limited bandwidth.
+
+
+Prefer deep learning in the form of functions of mobile apps in Swift or web services in C++/Go, but not a Python program running as in a separate process.
+
+
+
+* Lesson 3: Inference and Training are Inseparable
+
+
+* Inference and Training are Inseparable: Online Learning
+
+Internet businesses, like search, ads, and recommendation, learn user interests to improve service quality.
+
+Online learning captures short-term interests, which leads to most clicks.
+
+AI is part of the backend system as an RPC service:
+
+
+   impression  -->    trainer  --\            /- inference
+   log stream                     \          /
+                      trainer  --  parameter --  inferencer   <-- online queries
+   click log   -->                  server   \
+   stream             trainer  --/            \- inferencer
+
+
+* Inference and Training are Inseparable: An Example
+
+The backend system architecture of a speech recognition startup company [[https://www.crunchbase.com/organization/unisound-beijing][Unisound]]
+
+.image unisound-arch.png _ 900
+
+- For good performance, not ideal for writing backend services using Python.
+- Most backend developers don't use Python as their primary language.
+
+
+
+* Inference and Training are Inseparable: A Modeling Perspective
+
+Deep learning expending its applications:
 
 - computer vision -- face recognition
 - NLP -- speech recognition
-- GAN -- query rewrite, keyword generation from landing page
+- GAN -- query rewrite, keyword generation from the landing page
 - reinforcement learning -- AlphaGo
 - imitation learning -- autonomous driving
 
-GAN, reinforcement learning, imitation learning:
+For the last three:
 
 - Part of the training data comes from running inference.
-- impossbile to deploy a "trained" model for inference.
+- Can deploy a trained model for inference.
 
+
+
+* Lesson 4: Autonomous Driving
+
+
+
+
+* Autonomous Driving: Applications of the Future
+
+- Caffe can do CNN but not RNN
+- TensorFlow does RNN well, but GAN code is lengthy and incomprehensive
+- PyTorch and Eager Execution work well with GAN and reinforcement learning
+- As a Paddle author, I wanted to know future applications
+
+After talking to the autonomous driving car team, I built my boat *deeepnav*, which runs imitation learning -- learning from the drivers.
+
+
+
+* Autonomous Driving: DeeepNav
+
+.image deeepnav.png _ 800
+
+
+
+* Autonomous Driving: Imitation Learning
+
+Supervised learning
+
+- Learns from the driver, cannot handle exceptional/dangerous cases.
+
+Reinforcement learning
+
+- Learns by exhaustively exploring all possible cases in a simulator
+- It is arguably more challenging to write a realistic simulator than learning to drive.
+
+Imitation learning
+
+- Bootstraps by supervised learning, explore near to what it knows asking for human supervisor occasionally.
+
+
+
+* Autonomous Driving: The Algorithm
+
+.code deeepnav.txt
+
+
+
+* Autonomous Driving: Demand for Deep Learning Compiler
+
+
+- Inference and training are inseparable: both appear in the same driving algorithm.
+- Deep learning as a function of a program, but not a separate program.
+- Control flows: channels and threads for `asynchronous_update` and `communicate_with_federated_server`.
+- Online learning: must allow drive engagement in exceptional cases.
+- Modeling parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
+- Federated learning: collaborative learning from many drivers.
+- Compile-time optimization: the faster the code runs, the more real-time the control.
+
+
+
+* Discussions: Want to Learn from Swift for TensorFlow
 
 
 
@@ -168,14 +340,66 @@ GAN, reinforcement learning, imitation learning:
 
 Tape-based v.s. compiler-based.
 
-- The tracing mode is like JIT-compile. We have to balance runtime cost of optimization and gain.
+- The tracing mode is like JIT-compile. We have to balance the runtime cost of optimization and gain.
 - Compilers move optimizations ahead of runtime, free to do all optimizations.
 
-Remove the dependency to runtime-information.
+Remove the dependency on runtime-information.
 
 - `cudnn` includes multiple implementations of CNN, and chooses one at runtime considering GPU model and filter size.
 - Maybe [[https://en.wikipedia.org/wiki/Universal_binary][universal binary]] -- let the compiler generate multiple choices automatically?
 
 
 
+
+* Appendix: Paddle Details
+
+
+
+* Paddle: Intermediate Representation
+
+- Has *block*, function *signature*, function *call*, and [[https://github.com/PaddlePaddle/Paddle/pull/4241][*program*]].
+- Need [[https://github.com/PaddlePaddle/Paddle/issues/10244][user-defined functions]].
+
+.image ir.png _ 700
+
+
+* Paddle: The VM
+
+The [[https://github.com/PaddlePaddle/Paddle/pull/4537][executor]] works like a VM, which runs a `Program` protobuf message.
+
+.image interpreter.png _ 800
+
+
+* Paddle: Compiler Backends as Transpilers
+
+- For example, the [[https://github.com/wangkuiyi/Paddle/blob/8909708c1a91d580ed3c8cb12d1cab61338eac39/doc/design/fluid_compiler.md][CUDA backend]] converts `Program` messages into `.cu` files.
+
+.image compiler.png _ 700
+
+
+* Paddle: Scope Hierarchy
+
+The compiler/VM needs to track variable values for the backward pass, thus cannot pop stack frames, so we generalize stacks into trees, or a [[https://github.com/PaddlePaddle/Paddle/pull/3116][scope hiearchy]].
+
+.image scope.png _ 800
+
+
+* Paddle: More Transpilers
+
+- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/distribute_transpiler.py][distributed-training transpiler]] converts a `Program` message into a trainer program and a parameter server program.
+
+- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/inference_transpiler.py][training-to-inference transpiler]] extracts a single iteration of inference code out from a training `Program`, so other transpilers can generate TensorFlow/Caffe graphs.
+
+- The [[https://github.com/PaddlePaddle/Paddle/blob/develop/python/paddle/fluid/transpiler/memory_optimization_transpiler.py][early-free memory transpiler]] detects tensors no longer in use and inserts `FreeTensorOperators` into the program to free them early.
+
+The [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]] -- make each program do one thing well.
+
+
+* Paddle: The Frontend Language
+
+We are too lazy to re-implement the compiler frontend for a programming language; so we slightly customize Python to generate the `Program` protobuf message.
+
+Take [[https://github.com/PaddlePaddle/Paddle/issues/3119][IfElse]] as an example:
+
+.image ifelse.png _ 700
 
