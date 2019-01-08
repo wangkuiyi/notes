@@ -1,0 +1,12 @@
+M <- train(drive_for(20 * min))
+
+while is_driving() {
+    s <- read_sensor()
+    a <- driver_taking_over() ? read_driver() : infer(M, s)
+    actuate(a)
+    M <- asynchronous_update(M, s, a)
+
+    if (has_wifi()) {
+        communicate_with_federated_server(&M)
+    }
+}    
