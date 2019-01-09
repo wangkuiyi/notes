@@ -69,6 +69,7 @@ Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fl
 - Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function calls]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
 
 
+
 TensorFlow builds model/data parallelism into the system.
 Paddle Fluid builds mode/data parallelism using the system.
 
@@ -220,6 +221,7 @@ AI is part of the backend system as an RPC service:
    stream             trainer  --/            \- inferencer
 
 
+
 * Deeper Integration of Inference and Training: An Example
 
 The backend system architecture of a speech recognition startup company [[https://www.crunchbase.com/organization/unisound-beijing][Unisound]]
@@ -290,6 +292,7 @@ Imitation learning
 * Autonomous Driving: The Algorithm
 
 .code deeepnav.txt
+
 
 
 
