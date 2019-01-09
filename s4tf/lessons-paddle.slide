@@ -1,5 +1,5 @@
 Lessons from Paddle
-A Trial Towards Deep Learning Compiler and Its Deployments
+A Trial Towards Deep Learning Compiler and Its Applications
 
 Yi Wang
 Principal Engineer
@@ -9,9 +9,9 @@ yi.w@antfin.com
 
 * Overview
 
-- Paddle: towards deep learning compiler
+- Paddle: Baidu's open-source DL system
 
-- Lessons: what we learned from developing and deploying Paddle
+- Requirements and Lessons: what we learned from developing and deploying Paddle
 
 - Discussions: what we want to learn from you
 
@@ -43,10 +43,10 @@ yi.w@antfin.com
 
 * Paddle: The History
 
-- 2012: Wei Xu wrote the graph-based version: supports RNN, complements Caffe.
+- 2012: graph-based, supports RNN, complements Caffe.
 - 2013: The CEO's Award due to adoptions by Baidu products.
-- 2016: Open sourced.  I led the technology upgrading.
-- 2017: Released Paddle Fluid, the deep learning VM/compiler.
+- 2016: Open sourced.  I designed the new generation of technology and led the development work.
+- 2017: Released Paddle Fluid, the deep learning interpreter and compiler.
 - 2018: 90% Baidu products turned to use Fluid, including Web search and online advertising.
 
 
@@ -63,10 +63,10 @@ Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fl
 
 - IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]
 - [[https://github.com/PaddlePaddle/Paddle/pull/7178][VM]]
-- Backend as transpilers
+- Backend as compiler passes
 - Scope hierarchy
-- Frontend - `with` `fluid.IfElse(cond).true_branch():`
-- Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
+- Frontend - a Python library, similar to TensorFlow's
+- Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function calls]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
 
 
 TensorFlow builds model/data parallelism into the system.
@@ -110,9 +110,9 @@ TensorFlow
 
 Our concerns:
 
-- Rarely we see a programming language assigns instruction/function to a CPU core at programming time or compiling time.
-- It is usually the programmers' work, instead of the programming languages' work, to partition big variables.
-- We might have an insufficient number of GPUs for the many partitions.
+- The programming abstraction is too low-level, e.g., exposes partitioned variables to end users.
+- Device placement at compile time is too rigid and may not lead to high runtime cluster utilization.
+- We don't have a sufficient number of GPUs for the many partitions needed for terabytes parameters.
 
 
 
@@ -125,7 +125,7 @@ From the perspective of programming languages:
 - Create `DistributedEmbeddingLayer` and `DistributedNCELayer` that access `memcached`.
 - We could provide primitives to access `memcached` and write `DistributedEmbeddingLayer` and `DistributedNCELayer` in Python (as user-defined functions) other than in C++ (as built-in functions).
 
-`memcached` might not be a perfect choice; the point is to leave the choice to programmers.
+Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]], making each program do one thing well, we out-source variable partitioning to an external storage layer.
 
 
 
@@ -142,6 +142,7 @@ where efficiency include
 
 - from job start to completion
 - from job submission to start -- less addressed but a strong requirement
+
 
 
 * Distributed Learning: Elastic Scheduling
@@ -191,19 +192,19 @@ Elastic scheduling = fault tolerance
 
 - Google's [[https://ai.googleblog.com/2017/04/federated-learning-collaborative.html][federated learning project]] on input methods.
 
-- Ant's demand for federated learning is because of user privacy and data security.
+- Ant's requirement for federated learning is because of user privacy and data security.
 
-- Autonomous driving's demand is due to an unstable network connection and limited bandwidth.
+- Autonomous driving's requirement is due to an unstable network connection and limited bandwidth.
 
 
 Prefer deep learning in the form of functions of mobile apps in Swift or web services in C++/Go, but not a Python program running as in a separate process.
 
 
 
-* Lesson 3: Inference and Training are Inseparable
+* Lesson 3: Deeper Integration of Inference and Training
 
 
-* Inference and Training are Inseparable: Online Learning
+* Deeper Integration of Inference and Training: Online Learning
 
 Internet businesses, like search, ads, and recommendation, learn user interests to improve service quality.
 
@@ -219,7 +220,7 @@ AI is part of the backend system as an RPC service:
    stream             trainer  --/            \- inferencer
 
 
-* Inference and Training are Inseparable: An Example
+* Deeper Integration of Inference and Training: An Example
 
 The backend system architecture of a speech recognition startup company [[https://www.crunchbase.com/organization/unisound-beijing][Unisound]]
 
@@ -230,7 +231,7 @@ The backend system architecture of a speech recognition startup company [[https:
 
 
 
-* Inference and Training are Inseparable: A Modeling Perspective
+* Deeper Integration of Inference and Training: A Modeling Perspective
 
 Deep learning expending its applications:
 
@@ -292,10 +293,10 @@ Imitation learning
 
 
 
-* Autonomous Driving: Demand for Deep Learning Compiler
+* Autonomous Driving: Requirement from Deep Learning Compiler
 
 
-- Inference and training are inseparable: both appear in the same driving algorithm.
+- Deeper integration of inference and training: both appear in the same driving algorithm.
 - Deep learning as a function of a program, but not a separate program.
 - Control flows: channels and threads for `asynchronous_update` and `communicate_with_federated_server`.
 - Online learning: must allow drive engagement in exceptional cases.
