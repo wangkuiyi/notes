@@ -13,7 +13,7 @@ yi.w@antfin.com
 
 - Requirements and Lessons: what we learned from developing and deploying Paddle
 
-- Questions: what we want to learn from you
+- Discussions: what we want to learn from you
 
 
 * The Presenter
@@ -73,7 +73,7 @@ Imitation learning
 
 
 
-* Autonomous Driving: Requirement from Deep Learning Compiler
+* Autonomous Driving: Requirements
 
 
 - Deeper integration of inference and training: both appear in the same driving algorithm.
@@ -305,7 +305,19 @@ For the last three:
 
 
 
-* Questions: Want to Learn from Swift for TensorFlow
+* Discussions: Want to Learn from Swift for TensorFlow
+
+
+
+* Expectations
+
+- Deeper integration of inference and training.
+- Deep learning as a function, but not a program.
+- Control flows including channels and threads.
+- Federated learning using the edge and the cloud.
+- Online learning: must allow driver engagement in exceptional cases.
+- Modeling parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
+- Compile-time optimization: the faster the code runs, the more real-time the control.
 
 
 
