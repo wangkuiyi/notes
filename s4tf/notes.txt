@@ -1,0 +1,223 @@
+# Speech notes: lessons from Paddle
+
+Page 1:
+
+Hello everyone. Thanks to the introduction of Mingsheng. My pleasure to be here sharing something and enjoying the chance to learn from you. 
+
+I am Yi, a principal engineer at Ant Financial. For people who never heart about it, Ant is a startup company currently valued $150B according to Reuters. The largest shareholder of Ant is Alibaba Group. The market cap of Ant plus Alibaba is between those of Facebook and Google.
+
+Before I start my sharing, I want to bring you thanks from my colleagues at Ant and friends at Alibaba, for your great work on TensorFlow. Ant and Alibaba cover about 1.5 billion users in the world, mostly Asia, and runs a  product inline of e-commerce, logistics, mailing service, online payment, credit bureau, and financial services. Almost every piece of AI behind all these products uses TensorFlow. So, you see how your work changed the landscape of the Internet industry of the east of the world. Thank you!
+
+Page 2:
+
+Before joining Ant recently, I was the chief architecture of Baidu's open-source DL system, Paddle. Paddle is far from as famous as TensorFlow but widely used inside Baidu, a company known as the Chinese Google. When I shared my experience with Mingsheng at NIPS, he thinks that some stories are exciting and invited me to come and share.
+
+Before sharing the lessons, I would need a few minutes to give you some necessary background about Paddle. And after the sharing, I have some questions that I want to learn the answers from you.
+
+Page 3:
+
+What I thought and did with Paddle depend on my work experience. As you see, I had been working in tech giants and a startup company, Scaled Inference, as well as in the east and the west. When I started to work on Paddle, what's in my mind include applications I knew as a researcher, a director manager of the ad business, a data scientist, a founding member of an AI startup company. 
+
+Each application poses some requirements to ML infra, but, there is a fascinating application that raises the union of requirements from all other applications I know. This unique application is autonomous driving -- not the car, but a solar-powered boat -- as you can see from the picture.
+
+Page 4:
+
+So, let's start with the boat.
+
+Page 5:
+
+My initial motivation was to understand the requirements of my potential clients. I got the idea of looking for the future by looking at the past.
+
+[Basically, read the content on this page.]
+
+Page 6:
+
+There are some reasons to build a boat.  It is cheap, compared with cars. It is safe -- we drive it in a lake, no much traffic. Most importantly, I have full control of it so I can run whatever algorithm I want.
+
+These pictures reveal details about the boat.  Let us explain them one-by-one clockwise.
+
+Picture 1: To build a stable platform for the electronics, I need a Catamaran -- a boat with two bodies. I reused my kayak and my daughter's. To combine them, my friend Xi Chen and I built an aluminum frame.
+
+Picture 2: We crafted a work procedure to load everything onto my truck and assemble them by the lake.
+
+Picture 3: The boat has an electric motor, which needs a battery. All other electronics use a second battery. We use two solar panels to charge the batteries for more extended mileage.
+
+Picture 4: The actuators include a driving motor and a stepper motor to control the direction.  We connected the two motors using a chain from an old bike.
+
+Picture 5: The sensors on the boat include an anemometer, which measures the wind, a water flow meter, GPS, and four one-line Lidars. 
+
+Picture 6: We tried various devices to run the control system and the learning algorithm -- Raspberry Pi, NVIDIA Tegra with a single GPU, NVIDIA Drive PX2 with two powerful GPUs. The balance among the computational power, energy consumption, and weight led our final choice to a MacBook Pro.
+
+Page 7:
+
+Some old school autonomous driving systems run the supervised learning algorithm, which leans from the pair of sensor data and driver's actions at each sampling moment.  The problem is that in exceptional cases, like car accidents, the data either crashed with the car or are not very helpful -- because the driver's actions led to the crash.
+
+So, we need an algorithm that can learn good driving behaviors from drivers while exploring some unexceptional states. Reinforcement learning exhaustively explores states in a simulator, and it is arguably more challenging to write a good simulator than learning to drive.
+
+A new hope is imitation learning, which is related to reinforcement learning and active learning. It explores unexceptional but less unexpected states by driving the vehicle under the supervision of drivers. Let me explain the algorithm.
+
+Page 8:
+
+Since 2011, there have been some well-studied imitation learning algorithms published. We chose DAGGER and changed it a little bit to make it fits situations of autonomous driving.
+
+The first step is to bootstrap the model using supervised learning. The control system records sensor data and driver's behavior sequences for about 20 minutes. Then train the model. This step can be done off the boat, for example, on a workstation on my truck.  However, the following steps must train models on the boat. The basic idea of imitation learning is to let the bootstrapped model drive the boat. If everything is alright, the control system updates the model using sensor data and the model's behavior.  However, once the driver notices something wrong like that the boat is running towards the shore, s/he should take over the control. And, the control system updates the model using driver's behavior. To accelerate the trial-and-err iteration, we want online learning.  Otherwise, we'd have to dock the boat every like twenty minutes, unplug the SD card, run for my truck for training, and run back to the boat with the new model on the SD card -- which sounds like gym work, but much harder, believe me, I tried it.
+
+Page 9 (maybe occasionally switch back to Page 8):
+
+If we review the algorithm, we see the following properties.
+
+From the algorithm (switch back to Page 8), we see function calls to train, infer, and asynchronous_update, which means we cannot train a model and deploy it; instead, we have to integrate the inference and training deeply.
+
+With TensorFlow or Python, we usually write and run Python programs to update the model. However, Python runs slowly to keep the loop running in near real-time. So we implemented the algorithm in Go, and we want the DL program in the form of some Go or C functions (Go can call C easily), but not standalone Python programs.
+
+The update must be asynchronous so to keep the loop running fast. Go's CSP control flow helps a lot. We run the update in a separate goroutine, and the asynchronous_update function sends state-action pairs to the model update goroutine via a channel. The model update goroutine processes state-action pairs slower than the generation speed, Go's select statement allows the timeout of some pairs by reading simultaneously from the pair channel and a timer channel.
+
+The function communicate_with_federated_server also depends on Go's CSP control flow. Federated learning organizes many boats or cars to learn collaboratively. I will explain it in more detail later.
+
+Federated learning is another reason for learning onboard, or online learning, as it keeps the collaborative learning iterates fast. The primary goal is to allow drivers to engage in and handle unexceptional cases in real-time.
+
+We also want model parallelism, not for big models, but faster processing. When we use NVIDIA Drive PX2, which has two GPUs, we want to use one of them for infer and the other for model update.
+
+We want the loop running fast so could we capture data in real-time. We don't like Python in this case.
+
+Page 10 and 11:
+
+Paddle helped me addressing these requirements. To explain how it does, let me give you a brief introduction to Paddle.
+
+Page 12:
+
+The Paddle project has a long history, as almost old as Caffe, which doesn't support RNN, but Paddle does. The uniqueness helped Paddle expands its applications in Baidu rapidly. In 2013, many Baidu products had been using Paddle, and it won the CEO Award.
+
+However, it was open-sourced lately, after TensorFlow has well established a thriving community. When Xu Wei, my manager and the original author of Paddle, asked me to lead the project since then, I realized that we have to upgrade the technology. So I re-designed Paddle to work more like an interpreter or a compiler. I had to admit that I didn't have much knowledge or experience about compilers; it was tough work, and now I know I can do it much better. Anyway, the system works. In 2018, a rough estimate of 90% Baidu products started to use the new system, including Web search and online advertising.
+
+Page 13:
+
+We learned a lot of lessons about running an open source project. I believe Google is way more knowledgable than us. So I brief the part using two tweets from Francois. The left one shows Paddle attracted community attention when it was open sourced. The right one was half a year after the release of new Paddle. It says all DL systems were growing faster.
+
+Page 14:
+
+The new Paddle has an IR, defined as protobuf messages.  Paddle's IR doesn't describe a graph; instead, it describes a program. It has a message named Block, which represents something between a pair of curly braces in Java and C++ -- a sequence of variable definitions and statements. It supports control flows.  For example, a message representing the IfElse control flow takes two blocks representing the true and false branches.
+
+We have an interpreter that executes the Program protobuf message like that TensorFlow runtime executes a graph.
+
+The Paddle frontend is like TensorFlow too. We have a Python library, which, when called, constructs the IR. A minor difference is that we use Python's with statement to describe loop steps and conditional branches.  If you are interested, we can go over some example programs at the end of this slide.
+
+Compiler backends often consist of passes. Paddle passes are programs, in  Python, Go, C++, that change the protobuf messages.  For example, we have a pass that inserts FreeTensor operators into the backend pass to free tensors that are no longer in use.  Another pass named DistributedTranspiler converts a Program message into two -- one run on trainer processes and the other one is the parameter server.  A final pass turns the protobuf message into a C++ source file, which can then be compiled using GCC or NVCC.
+
+We explored function definitions and calls, which is still experimental. We have an experimental implementation of something like Go's CSP.
+
+When executing the forward pass of a DL program, the interpreter and compiler cannot pop stack frames, because these frames contain variables that will be used later by the backward pass. So we generalized stacks into trees, known as scope hierarchy.
+
+These are all about Paddle. We don't have graphs, so we have no graph partitioning, which means we don't support model parallelism and data parallelism in the TensorFlow way. However, I will explain that Paddle programmers can implement model and data parallelism easily.
+
+Page 15 and 16:
+
+Let us start from model parallelism, and review some lessons I learned from Paddle.
+
+Page 17:
+
+Model parallelism is a well-known solution to big models.
+
+Paddle's application includes advertising and iQiyi, a Netflix-like product. Advertising requires embedding layers whose parameter is terabytes big. The short video classification application uses huge parameters to support millions of classes.
+
+Page 18:
+
+TensorFlow support model parallelism by partitioning the graph at runtime. It also supports assigning operators to devices at programming time by calling tf.device(). Similarly, programmers can create partitioned variables at programming time.
+
+With our full respect, but we have some concerns about exposing low-level programming abstractions to end users.
+
+Also, I will show later that when we do distributed learning and elastic scheduling, device placement at programming or compile time is too and may not lead to high cluster utilization.
+
+A most practical concern is that we don't have a sufficient number of GPUs for the many partitions need for terabytes parameters.
+
+Page 19:
+
+Paddle's solution to big parameters is to out-source the partitioning to an external storage service.
+
+We have DistributedEmbeddingLayer and DistributedNCELayer that saves the parameter tensor in memcached, or Redis. The latter supports model parameter persistence after training.
+
+We have experimental operators that define primitives to access the external storage service so users can define distributed layers as Python functions.
+
+Surprisingly, our clients like this way, because they can concentrate on the model, but don't have to think about partitioning.
+
+Page 20
+
+Another lesson I learned is about distributed learning and elastic scheduling.
+
+Page 21:
+
+Users have two requirements: convergence and efficiency, where efficiency includes two parts: the runtime efficiency is from job start to completion, and the pending time from submission to start. Many care the runtime efficiency, but less address the pending time.
+
+However, at Baidu and Ant, more than 80% user complains are about the pending time. And users want elastic scheduling.
+
+Page 22:
+
+Usually, when users submit a job that requires 10 GPUs, and the cluster has only five idle ones, the job has to wait.
+
+Elastic scheduling means that the scheduling system lets the job to start and use the five idle GPUs. When other jobs complete in the future and release GPUs, the scheduling system will start more processes in the job to use newly freed GPUs.
+
+Another rule of elastic scheduling is that if some high-priority jobs require more GPUs and the cluster doesn't have a sufficient number of idle GPUs, the scheduling system kills some processes of our job to free GPUs.
+
+Paddle uses Kubernetes as the scheduling system and adds a Kubernetes controller program to customize the scheduling algorithm.
+
+In addition to customizing Kubernetes, we also need to make sure that our distributed learning job is tolerable to a changing number of processes -- it must not crash with the change.
+
+Page 23:
+
+There are usually three ways to implement distributed DL learning.  The first is synchronous SGD. PyTorch provides an all_reduce call to implement synchronous SGD. As all trainer processes collaborative update the model, there is no need for parameter servers. Each model update depends on gradients from all trainers. all_reduce can be optimized using sophisticated hardware and HPC techniques. But it is not fault-tolerable -- any trainer process fails, all_reduce fails.
+
+Page 24:
+
+TensorFlow's parameter server can update models using gradients from some but not all trainers. This flexibility also has the potential to enables fault-tolerance of trainer process failures.
+
+Page 25:
+
+Paddle uses asynchronous SGD and uses etcd to make it tolerable to failures of trainers, the parameter server, and even the master process. We named this technique EDL -- elastic deep learning. In a CPU cluster than runs Nginx and Paddle jobs, the experiment shows that EDL achieves an overall CPU utility up to 90%.
+
+The figure on top shows that we manually decrease and then increase the number of Nginx jobs.  The one in the middle illustrates that the number of processes in Paddle jobs accordingly increases and then decreases due to the elastic scheduling. The one at the bottom shows the general CPU utilizaiton.  
+
+This figure is one of those in an invited post published on the Kubernetes official blog. I am not going to dive into details, but for your interests, please click the link to the post.
+
+A challenge of asynchronous SGD is that it doesn't guarantee convergence. Sometimes, merely changing the learning rate could make the training not to converge. My recent work at Ant is trying to address this issue.
+
+Page 26:
+ 
+A generalized form of distributed learning is federated learning -- the phones on the edge and servers on the cloud collaboratively trains a model.
+
+Google published a blog post in 2016 on a federated deep learning application. Thanks to my friend Shuyi Hu, who worked on the project and reminded me of this blog post on federated learning of software keyboards. It is exciting and inspiring.
+
+At Ant, federated learning is a must-to-have. The financial industry cares about user privacy and data security. Al and governments have strict regulations to follow. Federated learning means that mobile phones do not upload user data, but gradients or models.
+
+As we explained earlier, autonomous driving poses requirements on federated learning too. For cars, the communication with the cloud may happen during charging and via the charging cables.
+
+In all such cases, we prefer that deep learning code in the form of functions of mobile apps and Web services, in Swift or Go, but not as a standalone Python program.
+
+Page 27:
+
+The third lesson I want to explain is that inference and training are often profoundly integrated.
+
+Page 28:
+
+Internet businesses like search, ads, and recommendation, need to DL to understand user interests so to improve their service quality.
+
+User interests often shift. The short-term user interests are those lead to most clicks and revenue. So we need online learning to capture them.
+
+In the case of online learning, the training data is a stream. And the AI system is part of the backend system. It would be easier to make the AI system a distributed RPC service supports two calls -- one for training, one for inference.
+
+Page 29:
+
+This page shows a real backend architecture of a well-known Chinese AI startup company, Unisound, which runs speech recognition service.
+
+Clients of the service include toys, mobile apps, and Web pages. They access a Nginx module, which invokes the AI service's inference call to transcribe user voices.  Also, the module generates two log streams -- user voices and user feedbacks.  For example, the user speaks again immediately after s/he received the transcription; it is likely that s/he is not satisfied with the result; and vice versa.
+
+Kafka collects such two log streams and invokes the AI system's online learning call to update the model.
+
+The deep integration of online learning and inference makes Unisound's service quality keeps improving as long as the business keeps running.
+
+A key point here is that for Python is not an ideal choice for writing backend services. Another practical issue is that most backend developers don't use Python as their primary programming language.
+
+Page 30:
+
+We have been talking about that online learning of supervised models needs a deep integration of inference and training. Deep learning has been evolving and proved successful in machine learning paradigms.
+
+In GAN, reinforcement learning, and imitation learning, part of the training data comes from inferencing the current model. So, from the theoretical perspective, these models all require deep integration of training and inference.  In other words, we cannot deploy a trained model for inference. To deploy such models to production environments, we prefer not to use Python.

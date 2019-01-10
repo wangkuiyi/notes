@@ -28,6 +28,63 @@ yi.w@antfin.com
 .image deeepnav-small.png _ 500
 
 
+* Autonomous Driving
+
+
+* Autonomous Driving: To Learn the Future
+
+- Caffe can do CNN but not RNN
+- TensorFlow does RNN well, but GAN code is lengthy and incomprehensive
+- PyTorch and Eager Execution work well with GAN and reinforcement learning
+- Python doesn't work well with imitation learning
+- As a tool creator, I wanted to somehow target applications of the future
+
+After talking to the autonomous driving car team at Baidu, I built my boat *deeepnav*, which runs imitation learning -- learning from the drivers.
+
+
+
+* Autonomous Driving: DeeepNav
+
+.image deeepnav.png _ 800
+
+
+
+* Autonomous Driving: Imitation Learning
+
+Supervised learning
+
+- Learns from the driver, cannot handle exceptional/dangerous cases.
+
+Reinforcement learning
+
+- Learns by exhaustively exploring all possible cases in a simulator
+- It is arguably more challenging to write a realistic simulator than learning to drive.
+
+Imitation learning
+
+- Bootstraps by supervised learning, explore near to what it knows asking for human supervisor occasionally.
+
+
+
+* Autonomous Driving: The DAGGER' Algorithm
+
+.code deeepnav.txt
+
+
+
+
+* Autonomous Driving: Requirement from Deep Learning Compiler
+
+
+- Deeper integration of inference and training: both appear in the same driving algorithm.
+- Deep learning as a function of a program, but not a separate program.
+- Control flows: channels and threads for `asynchronous_update` and `communicate_with_federated_server`.
+- Federated learning: collaborative learning from many drivers.
+- Online learning: must allow driver engagement in exceptional cases.
+- Modeling parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
+- Compile-time optimization: the faster the code runs, the more real-time the control.
+
+
 
 * Paddle: A Brief Introduction
 
@@ -37,7 +94,7 @@ yi.w@antfin.com
 
 - A brief history and business impact
 - The open source community
-- The IR, VM, and transpilers
+- The IR, interpreter, and transpilers
 
 
 
@@ -62,16 +119,14 @@ Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fl
 * Paddle: Towards a Compiler
 
 - IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]
-- [[https://github.com/PaddlePaddle/Paddle/pull/7178][VM]]
-- Backend as compiler passes
-- Scope hierarchy
+- [[https://github.com/PaddlePaddle/Paddle/pull/7178][Interpreter]]
 - Frontend - a Python library, similar to TensorFlow's
+- Backend as compiler passes
 - Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function calls]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
+- Scope hierarchy
 
-
-
-TensorFlow builds model/data parallelism into the system.
-Paddle Fluid builds mode/data parallelism using the system.
+TensorFlow can do model/data parallelism for users.
+Paddle Fluid assumes that user programs do mode/data parallelism.
 
 
 
@@ -80,11 +135,10 @@ Paddle Fluid builds mode/data parallelism using the system.
 - Model parallelism
 - Distributed computing and elastic scheduling
 - Inference and training are inseparable
-- Autonomous driving
 
 
 
-* Lesson 1: Model Parallelism
+* Model Parallelism
 
 
 
@@ -126,11 +180,11 @@ From the perspective of programming languages:
 - Create `DistributedEmbeddingLayer` and `DistributedNCELayer` that access `memcached`.
 - We could provide primitives to access `memcached` and write `DistributedEmbeddingLayer` and `DistributedNCELayer` in Python (as user-defined functions) other than in C++ (as built-in functions).
 
-Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]], making each program do one thing well, we out-source variable partitioning to an external storage layer.
+Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]], making each program do one thing well, we out-source variable partitioning to an external storage service.
 
 
 
-* Lesson 2: Distributed Learning
+* Distributed Learning and Elastic Scheduling
 
 
 
@@ -150,7 +204,7 @@ where efficiency include
 
 Without elastic scheduling:
 
-- Suppose that a user submits a job requiring 10 GPUs, but the cluster has only 5 idle ones.  The job has to want.
+- Suppose that a user submits a job requiring 10 GPUs, but the cluster has only 5 idle ones.  The job has to wait.
 
 With elastic scheduling:
 
@@ -202,7 +256,7 @@ Prefer deep learning in the form of functions of mobile apps in Swift or web ser
 
 
 
-* Lesson 3: Deeper Integration of Inference and Training
+* Deeper Integration of Inference and Training
 
 
 * Deeper Integration of Inference and Training: Online Learning
@@ -250,62 +304,6 @@ For the last three:
 
 
 
-* Lesson 4: Autonomous Driving
-
-
-
-
-* Autonomous Driving: Applications of the Future
-
-- Caffe can do CNN but not RNN
-- TensorFlow does RNN well, but GAN code is lengthy and incomprehensive
-- PyTorch and Eager Execution work well with GAN and reinforcement learning
-- As a Paddle author, I wanted to know future applications
-
-After talking to the autonomous driving car team, I built my boat *deeepnav*, which runs imitation learning -- learning from the drivers.
-
-
-
-* Autonomous Driving: DeeepNav
-
-.image deeepnav.png _ 800
-
-
-
-* Autonomous Driving: Imitation Learning
-
-Supervised learning
-
-- Learns from the driver, cannot handle exceptional/dangerous cases.
-
-Reinforcement learning
-
-- Learns by exhaustively exploring all possible cases in a simulator
-- It is arguably more challenging to write a realistic simulator than learning to drive.
-
-Imitation learning
-
-- Bootstraps by supervised learning, explore near to what it knows asking for human supervisor occasionally.
-
-
-
-* Autonomous Driving: The Algorithm
-
-.code deeepnav.txt
-
-
-
-
-* Autonomous Driving: Requirement from Deep Learning Compiler
-
-
-- Deeper integration of inference and training: both appear in the same driving algorithm.
-- Deep learning as a function of a program, but not a separate program.
-- Control flows: channels and threads for `asynchronous_update` and `communicate_with_federated_server`.
-- Online learning: must allow drive engagement in exceptional cases.
-- Modeling parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
-- Federated learning: collaborative learning from many drivers.
-- Compile-time optimization: the faster the code runs, the more real-time the control.
 
 
 
@@ -339,9 +337,9 @@ In order to support heterogeneous computing, will you bundle GPU/ARM/x64 binary 
 .image ir.png _ 700
 
 
-* Paddle: The VM
+* Paddle: The Interpreter
 
-The [[https://github.com/PaddlePaddle/Paddle/pull/4537][executor]] works like a VM, which runs a `Program` protobuf message.
+The [[https://github.com/PaddlePaddle/Paddle/pull/4537][executor]] works like an interpreter, which runs a `Program` protobuf message.
 
 .image interpreter.png _ 800
 
@@ -355,7 +353,7 @@ The [[https://github.com/PaddlePaddle/Paddle/pull/4537][executor]] works like a 
 
 * Paddle: Scope Hierarchy
 
-The compiler/VM needs to track variable values for the backward pass, thus cannot pop stack frames, so we generalize stacks into trees, or a [[https://github.com/PaddlePaddle/Paddle/pull/3116][scope hiearchy]].
+The compiler/interpreter needs to track variable values for the backward pass, thus cannot pop stack frames, so we generalize stacks into trees, or a [[https://github.com/PaddlePaddle/Paddle/pull/3116][scope hiearchy]].
 
 .image scope.png _ 800
 
