@@ -295,9 +295,7 @@ Imitation learning
 
 
 
-
-* Autonomous Driving: Requirement from Deep Learning Compiler
-
+* Autonomous Driving: Requirements
 
 - Deeper integration of inference and training: both appear in the same driving algorithm.
 - Deep learning as a function of a program, but not a separate program.
