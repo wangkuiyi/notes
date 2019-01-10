@@ -58,9 +58,9 @@ A new hope is imitation learning, which is related to reinforcement learning and
 
 Page 8:
 
-Since 2011, there have been some well-studied imitation learning algorithms published. We chose DAGGER and changed it a little bit to make it fits situations of autonomous driving.
+Since 2011, there have been some imitation learning algorithms published. We chose DAGGER and altered it a little bit to make it fits the use in autonomous driving.
 
-The first step is to bootstrap the model using supervised learning. The control system records sensor data and driver's behavior sequences for about 20 minutes. Then train the model. This step can be done off the boat, for example, on a workstation on my truck.  However, the following steps must train models on the boat. The basic idea of imitation learning is to let the bootstrapped model drive the boat. If everything is alright, the control system updates the model using sensor data and the model's behavior.  However, once the driver notices something wrong like that the boat is running towards the shore, s/he should take over the control. And, the control system updates the model using driver's behavior. To accelerate the trial-and-err iteration, we want online learning.  Otherwise, we'd have to dock the boat every like twenty minutes, unplug the SD card, run for my truck for training, and run back to the boat with the new model on the SD card -- which sounds like gym work, but much harder, believe me, I tried it.
+The first step of the algorithm is to bootstrap the model using supervised learning. The control system records sensor data and driver's behavior sequences for about 20 minutes. Then train the model. This step can be done off the boat, for example, on a workstation on my truck.  However, the following steps must train models on the boat. The basic idea of imitation learning is to let the bootstrapped model drive the boat. If everything is alright, the control system updates the model using sensor data and the model's behavior.  However, once the driver notices something wrong like that the boat is running towards the shore, s/he should take over the control. And, the control system updates the model using driver's behavior. To accelerate the trial-and-err iteration, we want online learning.  Otherwise, we'd have to dock the boat every like twenty minutes, unplug the SD card, run for my truck for training, and run back to the boat with the new model on the SD card -- which sounds like gym work, but much harder, believe me, I tried it.
 
 Page 9 (maybe occasionally switch back to Page 8):
 
@@ -194,7 +194,7 @@ In all such cases, we prefer that deep learning code in the form of functions of
 
 Page 27:
 
-The third lesson I want to explain is that inference and training are often profoundly integrated.
+The third lesson I want to share is that inference and training are often profoundly integrated.
 
 Page 28:
 
