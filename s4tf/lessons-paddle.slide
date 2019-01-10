@@ -13,7 +13,7 @@ yi.w@antfin.com
 
 - Requirements and Lessons: what we learned from developing and deploying Paddle
 
-- Discussions: what we want to learn from you
+- Questions: what we want to learn from you
 
 
 * The Presenter
@@ -309,48 +309,20 @@ Imitation learning
 
 
 
-* Discussions: Want to Learn from Swift for TensorFlow
+* Questions: Want to Learn from Swift for TensorFlow
 
 
 
-* Discussion: Breakthrough
+* Questions
 
-- Take *tape* and *graph-of-operators* as two extremes of usability and performance.
-- PyTorch 1.0 tracing model is a compromise in between.
-- A compiler could achieve both.
+Is there a plan around developer experience like syntax highlighting and IDE integration?
 
+How is the comparison between source-to-source autodiff and generating backward code in IR?
 
-         Usability
-             ^ 
-             | PyTorch                      compiler
-             o..............................o
-             |                              :
-             |       o tracing mode         :
-             |              o scripting mode:
-             |                              :
-             |------------------------------o--> Performance
-                                        TensorFlow
-                             
+In order to support heterogeneous computing, will you bundle GPU/ARM/x64 binary code in something like a Apple [[https://en.wikipedia.org/wiki/Universal_binary][universal binary]] file?
 
-* Discussion: Usability
+- `cudnn` has multiple implementations of CNN, and chooses one at runtime considering the GPU model and the filter size.
 
-- Imperative programming
-- Syntax highlight and IDE integration
-- Debugger
-- Source-to-source autodiff reveals details (Will Swift4TF do this?)
-
-
-* Discussion: Performance
-
-Tape-based v.s. compiler-based.
-
-- The tracing mode is like JIT-compile. We have to balance the runtime cost of optimization and gain.
-- Compilers move optimizations ahead of runtime, free to do all optimizations.
-
-Remove the dependency on runtime-information.
-
-- `cudnn` includes multiple implementations of CNN, and chooses one at runtime considering GPU model and filter size.
-- Maybe [[https://en.wikipedia.org/wiki/Universal_binary][universal binary]] -- let the compiler generate multiple choices automatically?
 
 
 
