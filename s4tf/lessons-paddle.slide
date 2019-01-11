@@ -33,11 +33,10 @@ yi.w@antfin.com
 
 * Autonomous Driving: To Learn the Future
 
-- Caffe can do CNN but not RNN
-- TensorFlow does RNN well, but GAN code is lengthy and incomprehensive
-- PyTorch and Eager Execution work well with GAN and reinforcement learning
-- Python doesn't work well with imitation learning
-- As a tool creator, I wanted to somehow target applications of the future
+- Caffe can do CNN but not RNN.
+- TensorFlow does RNN well, but GAN code is a little bit lengthy and less comprehensive.
+- PyTorch and Eager Execution work well with GAN and reinforcement learning, but Python doesn't work well with imitation learning.
+- As a tool creator, I wanted to target applications of the future.
 
 After talking to the autonomous driving car team at Baidu, I built my boat *deeepnav*, which runs imitation learning -- learning from the drivers.
 
@@ -118,9 +117,9 @@ Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fl
 
 * Paddle: Towards a Compiler
 
-- IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]
-- [[https://github.com/PaddlePaddle/Paddle/pull/7178][Interpreter]]
-- Frontend - a Python library, similar to TensorFlow's
+- IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]: `Variable`, `Block`, `FunctionCall`, `Program`.
+- [[https://github.com/PaddlePaddle/Paddle/pull/7178][Interpreter]]: executes a `Program`.
+- Frontend - a Python library. Use Pythons' [[http://localhost:6060/lessons-paddle.slide#40][`with`]].
 - Backend as compiler passes
 - Control flows - [[https://github.com/PaddlePaddle/Paddle/issues/10244][function calls]], [[https://github.com/PaddlePaddle/Paddle/pull/6394][CSP]]
 - Scope hierarchy
@@ -173,12 +172,9 @@ Our concerns:
 
 * Model Parallelism: Paddle
 
-From the perspective of programming languages:
-
-- Operators are built-in functions.
-- Put big variables on `memcached`, which considers partitioning at runtime.
-- Create `DistributedEmbeddingLayer` and `DistributedNCELayer` that access `memcached`.
-- We could provide primitives to access `memcached` and write `DistributedEmbeddingLayer` and `DistributedNCELayer` in Python (as user-defined functions) other than in C++ (as built-in functions).
+- Outsource variable partitioning to an external storage service -- `memcached/Redis`.
+- `DistributedEmbeddingLayer` and `DistributedNCELayer` access `memcached/Redis`.
+- Operators like `ReadMcachedRow` and `WriteRedisRow` would allow users to define distributed layers in Python.
 
 Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]], making each program do one thing well, we out-source variable partitioning to an external storage service.
 
@@ -195,8 +191,8 @@ Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]]
 
 where efficiency include
 
-- from job start to completion
-- from job submission to start -- less addressed but a strong requirement
+- runtime efficiency: from job start to completion
+- pending time: from job submission to start -- less addressed
 
 
 
@@ -219,17 +215,17 @@ Elastic scheduling = fault tolerance
 * Distributed Learning: Synchronous SGD
 
 
-- Trainer processes do collaborative model update using [[https://pytorch.org/docs/stable/distributed.html][torch.distribution.all_reduce]]
+- TensorFlow provides `AllReduce` for trainer processes do collaborative model update.
 - No need for parameter servers.
 - Each model update depends on gradients from all trainers.
-- Optimize `all_reduce` using HPC techniques (RDMA and NVIDIA GPUDirect).
+- We can optimize `AllReduce` using RDMA and NVIDIA GPUDirect.
 - Not fault tolerable.
 
 
 
 * Distributed Learning: Partial Synchronous SGD
 
-- [[https://arxiv.org/abs/1604.00981][partial synchronous SGD]]: the parameter server waits for gradients from M out of N trainers before updating the model.
+- [[https://arxiv.org/abs/1604.00981][partial synchronous SGD]] introduces a parameter server that waits for gradients from *some* of the trainers before updating the model.
 - Better fault tolerance.
 
 
