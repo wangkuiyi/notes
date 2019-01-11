@@ -13,7 +13,7 @@ yi.w@antfin.com
 
 - Requirements and Lessons: what we learned from developing and deploying Paddle
 
-- Discussions: what we want to learn from you
+- Summary: why we are excited about Swift for TensorFlow
 
 
 * The Presenter
@@ -74,13 +74,13 @@ Imitation learning
 
 * Autonomous Driving: Requirements
 
-
-- Deeper integration of inference and training: both appear in the same driving algorithm.
-- Deep learning as a function of a program, but not a separate program.
+- Online learning: must allow driver's engagement in exceptional cases.
+- Inference and training in the same driving program.
+- AI and control in the same program.
+- Local calls from the control system to AI, no RPC please.
+- Model parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
 - Control flows: channels and threads for `asynchronous_update` and `communicate_with_federated_server`.
 - Federated learning: collaborative learning from many drivers.
-- Online learning: must allow driver engagement in exceptional cases.
-- Modeling parallelism: NVIDIA DRIVE PX2 has two GPUs -- one for inference, one for model update.
 - Compile-time optimization: the faster the code runs, the more real-time the control.
 
 
@@ -103,7 +103,7 @@ Imitation learning
 - 2013: The CEO's Award due to adoptions by Baidu products.
 - 2016: Open sourced.  I designed the new generation of technology and led the development work.
 - 2017: Released Paddle Fluid, the deep learning interpreter and compiler.
-- 2018: 90% Baidu products turned to use Fluid, including Web search and online advertising.
+- 2018: Most Baidu products turned to use Fluid, including Web search and online advertising.
 
 
 
@@ -117,7 +117,7 @@ Left: after opened sourcing graph-based Paddle. Right: after releasing Paddle Fl
 
 * Paddle: Towards a Compiler
 
-- IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]: `Variable`, `Block`, `FunctionCall`, `Program`.
+- IR - as [[https://github.com/PaddlePaddle/Paddle/pull/3322][protobuf messages]]: `Variable`, `Statement`, `Block`, `Program`.
 - [[https://github.com/PaddlePaddle/Paddle/pull/7178][Interpreter]]: executes a `Program`.
 - Frontend - a Python library. Use Pythons' [[http://localhost:6060/lessons-paddle.slide#40][`with`]].
 - Backend as compiler passes
@@ -133,7 +133,7 @@ Paddle Fluid assumes that user programs do mode/data parallelism.
 
 - Model parallelism
 - Distributed computing and elastic scheduling
-- Inference and training are inseparable
+- Inference and training often interleave with each other
 
 
 
@@ -162,10 +162,10 @@ TensorFlow
 - `tf.device()` to assign operators to devices and
 - `tf.create_partitioned_variables()` at programming time.
 
-Our concerns:
+Our concerns with our full respect:
 
-- The programming abstraction is too low-level, e.g., exposes partitioned variables to end users.
-- Device placement at compile time is too rigid and may not lead to high runtime cluster utilization.
+- Expose such low-level programming abstraction to end users?
+- Such exposing may not lead to high runtime cluster utilization.
 - We don't have a sufficient number of GPUs for the many partitions needed for terabytes parameters.
 
 
@@ -176,8 +176,7 @@ Our concerns:
 - `DistributedEmbeddingLayer` and `DistributedNCELayer` access `memcached/Redis`.
 - Operators like `ReadMcachedRow` and `WriteRedisRow` would allow users to define distributed layers in Python.
 
-Following the [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]], making each program do one thing well, we out-source variable partitioning to an external storage service.
-
+We weren't sure if this will work, but it turns out our clients like this way, because they can focus on modeling, no distraction from partitioning.
 
 
 * Distributed Learning and Elastic Scheduling
@@ -245,8 +244,7 @@ Elastic scheduling = fault tolerance
 
 - Ant's requirement for federated learning is because of user privacy and data security.
 
-- Autonomous driving's requirement is due to an unstable network connection and limited bandwidth.
-
+- Autonomous driving's requirement due to collaborative learning from many drivers.
 
 Prefer deep learning in the form of functions of mobile apps in Swift or web services in C++/Go, but not a Python program running as in a separate process.
 
@@ -259,12 +257,12 @@ Prefer deep learning in the form of functions of mobile apps in Swift or web ser
 
 Internet businesses, like search, ads, and recommendation, learn user interests to improve service quality.
 
-Online learning captures short-term interests, which leads to most clicks.
+User interests shift, need online learning to capture recent interests, which leads to most clicks.
 
 AI is part of the backend system as an RPC service:
 
 
-   impression  -->    trainer  --\            /- inference
+   impression  -->    trainer  --\            /- inferencer
    log stream                     \          /
                       trainer  --  parameter --  inferencer   <-- online queries
    click log   -->                  server   \
@@ -301,11 +299,11 @@ For the last three:
 
 
 
-* Discussions: Want to Learn from Swift for TensorFlow
+* Summary: Why we are excited about Swift4TF
 
 
 
-* Expectations
+* About functionality
 
 - Deeper integration of inference and training.
 - Deep learning as a function, but not a program.
@@ -317,7 +315,7 @@ For the last three:
 
 
 
-* Questions
+* About usability
 
 Is there a plan around developer experience like syntax highlighting and IDE integration?
 
@@ -377,9 +375,7 @@ The [[https://en.wikipedia.org/wiki/Unix_philosophy][Unix philosophy]] -- make e
 
 * Paddle: The Frontend Language
 
-We are too lazy to re-implement the compiler frontend for a programming language; so we slightly customize Python to generate the `Program` protobuf message.
-
 Take [[https://github.com/PaddlePaddle/Paddle/issues/3119][IfElse]] as an example:
 
-.image ifelse.png _ 700
+.image ifelse.png _ 800
 
